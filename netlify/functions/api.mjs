@@ -1,19 +1,46 @@
 import { getStore } from "@netlify/blobs";
 
-// Menyimpan state game per room (kode 4-8 huruf). GET = ambil, POST = simpan.
+const TTL = 10 * 60 * 1000; // room tanpa aktivitas 10 menit = dihapus
+const J = (o, s = 200) => Response.json(o, { status: s });
+const hash = async (s) =>
+  [...new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s)))]
+    .map((b) => b.toString(16).padStart(2, "0")).join("");
+
 export default async (req) => {
   const store = getStore({ name: "rooms", consistency: "strong" });
   const u = new URL(req.url);
   const room = (u.searchParams.get("room") || "").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 8);
-  if (!room) return new Response("room kosong", { status: 400 });
+  const act = u.searchParams.get("act") || "";
+  let pw = "";
+  try { pw = decodeURIComponent(req.headers.get("x-pw") || ""); } catch {}
+  if (!room) return J({ e: "room" }, 400);
 
-  if (req.method === "POST") {
-    const body = await req.json();
-    await store.setJSON(room, body);
-    return Response.json({ ok: true });
+  const now = Date.now();
+  let r = await store.get(room, { type: "json" });
+  if (r && now - r.t > TTL) { await store.delete(room); r = null; }
+  const h = await hash(room + ":" + pw);
+
+  if (act === "create") {
+    if (r) return J({ e: "exists" }, 409);
+    if (pw.length < 3) return J({ e: "pw" }, 400);
+    await store.setJSON(room, { h, t: now, s: await req.json() });
+    return J({ ok: 1 });
   }
-  const data = await store.get(room, { type: "json" });
-  return Response.json(data || null);
+  if (!r) return J({ e: "none" }, 404);
+  if (r.h !== h) return J({ e: "pw" }, 403);
+
+  if (act === "ping") { r.t = now; await store.setJSON(room, r); return J({ ok: 1 }); }
+  if (act === "leave") {
+    const i = +u.searchParams.get("slot"), s = r.s;
+    if (s.pl && (i === 0 || i === 1)) s.pl[i] = null;
+    if (!s.pl || (!s.pl[0] && !s.pl[1])) { await store.delete(room); return J({ ok: 1 }); } // kosong = hapus
+    s.g = "menu"; s.q = null; s.win = null; s.v++;
+    r.s = s; r.t = now;
+    await store.setJSON(room, r);
+    return J({ ok: 1 });
+  }
+  if (req.method === "POST") { r.s = await req.json(); r.t = now; await store.setJSON(room, r); return J({ ok: 1 }); }
+  return J(r.s);
 };
 
 export const config = { path: "/api" };
