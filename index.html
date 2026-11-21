@@ -50,7 +50,38 @@ input{width:100%;margin:5px 0}
 @media(prefers-reduced-motion:reduce){*{animation:none!important}}
 .mon{width:1.3em;height:1.3em;vertical-align:middle}.mon.big{width:130px;height:130px}
 hr{border:0;border-top:3px dashed #d6cbff;margin:14px 0}
+
+h1{text-shadow:0 2px 0 #fff,0 4px 0 var(--pk),0 6px 0 var(--ink)}
+button{box-shadow:0 5px 0 var(--ink)}button:active{transform:translateY(5px);box-shadow:0 0 0 var(--ink)}
+.box{box-shadow:0 6px 0 var(--ink),0 16px 20px #3b2a4a33}
+input[type=range]{padding:0;border:0;box-shadow:none}
+.stage{perspective:1000px;padding:10px 0 26px}
+.sb,.mb{transform-style:preserve-3d;transform:rotateX(calc(24deg + var(--rx,0deg))) rotateY(var(--ry,0deg));transition:transform .15s;padding:6px;background:#ffffff66;border-radius:20px;box-shadow:0 16px 0 #3b2a4a55,0 30px 30px #3b2a4a44}
+.c,.mc{transform-style:preserve-3d;box-shadow:0 4px 0 #3b2a4a66}
+.pw{transform:translateZ(12px) rotateX(-24deg);transform-origin:50% 100%;filter:drop-shadow(0 5px 2px #0005)}
+@keyframes hop{50%{transform:translateZ(22px) translateY(-6px) rotateX(-24deg)}}
+.sc{perspective:500px;width:60px;height:60px;margin:8px}
+.cube{width:60px;height:60px;position:relative;transform-style:preserve-3d;transition:transform .85s cubic-bezier(.2,.8,.3,1)}
+.cube i{position:absolute;inset:0;border:3px solid var(--ink);border-radius:12px;background:#fff;display:grid;place-items:center;font-size:2.4rem;font-style:normal;backface-visibility:hidden;line-height:1}
+.f1{transform:translateZ(30px)}.f2{transform:rotateY(90deg) translateZ(30px)}.f3{transform:rotateX(90deg) translateZ(30px)}.f4{transform:rotateX(-90deg) translateZ(30px)}.f5{transform:rotateY(-90deg) translateZ(30px)}.f6{transform:rotateY(180deg) translateZ(30px)}
+.uc{box-shadow:inset 0 -8px 0 #0003,0 5px 0 var(--ink)}
+.hand .uc{margin-left:-8px;transition:transform .15s}.hand .uc:first-child{margin-left:0}.hand .uc:hover{transform:translateY(-14px) rotate(-3deg) scale(1.08);z-index:2}
+.md{perspective:900px}.qc{animation:flip .6s}
+@keyframes flip{from{transform:rotateY(90deg) scale(.6);opacity:0}}
+#dock{position:fixed;right:10px;bottom:10px;display:flex;gap:10px;z-index:30}
+#dock button{width:54px;height:54px;border-radius:50%;font-size:1.4rem;padding:0;position:relative}
+#ub{position:absolute;top:-6px;right:-6px;background:var(--pk);border:2px solid var(--ink);border-radius:12px;font-size:.7rem;min-width:20px;line-height:1.4}
+#ub:empty{display:none}
+.pan{position:fixed;right:10px;bottom:76px;width:min(92vw,340px);background:#fff;border:3px solid var(--ink);border-radius:20px;box-shadow:0 6px 0 var(--ink);padding:10px;z-index:30}
+#cl{height:230px;overflow:auto;display:flex;flex-direction:column;gap:6px;margin-bottom:8px}
+.m{display:flex;gap:6px;align-items:flex-end}.m.me{flex-direction:row-reverse}
+.bb{background:#fff1b8;border:2px solid var(--ink);border-radius:14px;padding:4px 10px;max-width:75%;word-break:break-word}
+.m.me .bb{background:#ffd0d9}.bb small{display:block;font-size:.65rem;opacity:.7}.mm .mon{width:34px;height:34px}
+.pan .row input{flex:1;width:auto;margin:0}
 </style></head><body><div id="app"></div>
+<div id=dock><button id=bchat onclick="tp('chat')" title="Chat">💬<b id=ub></b></button><button onclick="tp('snd')" title="Suara">🔊</button></div>
+<div class=pan id=snd hidden><b>🔊 Volume</b><input type=range id=vol min=0 max=1 step=.05 oninput="SFX.set(+this.value)"><button id=mt onclick="SFX.tog();syncSnd()" style="width:100%"></button></div>
+<div class=pan id=chat hidden><div id=cl></div><div class=row><input id=ci maxlength=120 placeholder="Tulis pesan manis..." onkeydown="if(event.key=='Enter')sendC()"><button class=pk onclick="sendC()">➤</button></div></div>
 <script>
 const Q=`Apa mimpi terbesarmu?|What is your biggest dream?
 Apa kenangan masa kecil favoritmu?|What is your favorite childhood memory?
@@ -158,6 +189,48 @@ let st=null,me=0,room="",pw="",local=false,err="",rolling=false,seenRx=0,prof=nu
 const esc=s=>String(s).replace(/[&<>"'`]/g,"");
 const ls=(k,v)=>{try{if(v===undefined)return JSON.parse(localStorage.getItem(k));v===null?localStorage.removeItem(k):localStorage.setItem(k,JSON.stringify(v))}catch(e){return null}};
 
+/* ---------- SOUND (dibuat dari kode, tanpa file) ---------- */
+const SFX=(()=>{let ac,vol=+(ls("ldr_vol")??.6),mute=!!ls("ldr_mute");
+ const tone=(f,t=.12,type="sine",at=0,g=1,sl)=>{if(mute||vol<=0)return;try{const c=ac||(ac=new(window.AudioContext||window.webkitAudioContext)());if(c.state=="suspended")c.resume();
+  const o=c.createOscillator(),n=c.createGain(),s=c.currentTime+at;o.type=type;o.frequency.setValueAtTime(f,s);if(sl)o.frequency.exponentialRampToValueAtTime(sl,s+t);
+  n.gain.setValueAtTime(.0001,s);n.gain.exponentialRampToValueAtTime(.3*vol*g,s+.01);n.gain.exponentialRampToValueAtTime(.0001,s+t);o.connect(n);n.connect(c.destination);o.start(s);o.stop(s+t+.02)}catch(e){}};
+ return{get vol(){return vol},get mute(){return mute},set(v){vol=v;ls("ldr_vol",v)},tog(){mute=!mute;ls("ldr_mute",mute)},
+  pop:()=>tone(600,.08,"sine",0,.8,900),
+  dice:()=>[0,1,2,3,4,5].forEach(i=>tone(250+rnd(300),.06,"square",i*.12,.4)),
+  step:()=>tone(520,.09,"triangle",0,.8,780),
+  up:()=>[523,659,784,1047].forEach((f,i)=>tone(f,.12,"triangle",i*.08)),
+  down:()=>tone(700,.5,"sawtooth",0,.6,120),
+  coin:()=>{tone(988,.08,"square",0,.4);tone(1319,.25,"square",.08,.4)},
+  card:()=>{tone(900,.06,"triangle",0,.7,400);tone(1200,.1,"triangle",.07,.6)},
+  win:()=>[523,659,784,659,784,1047].forEach((f,i)=>tone(f,.18,"triangle",i*.12)),
+  chat:()=>{tone(880,.08);tone(1320,.12,"sine",.09)},
+  boing:()=>tone(200,.3,"sine",0,1,700)}})();
+let pq=null,pwn=null,psig=null,chat=[],seenC=0;
+const shuf=a=>a.map(x=>[Math.random(),x]).sort((a,b)=>a[0]-b[0]).map(x=>x[1]);
+
+/* ---------- CHAT ---------- */
+function rc(){const l=document.getElementById("cl");l.innerHTML=chat.map(m=>`<div class="m ${m.s==me?"me":""}"><span class=mm>${mon(m.a)}</span><div class=bb><small>${esc(m.n)}</small>${esc(m.t)}</div></div>`).join("")||"<p class=hint>Belum ada pesan. Sapa dulu yuk 👋</p>";l.scrollTop=l.scrollHeight}
+function ub(){const p=document.getElementById("chat"),el=document.getElementById("ub");if(!p.hidden)seenC=chat.length;const n=chat.length-seenC;el.textContent=n>0?n:""}
+function adoptChat(l){if(!l||l.length<chat.length)return;const add=l.slice(chat.length);chat=l;rc();if(add.some(m=>m.s!=me))SFX.chat();ub()}
+function tp(id){const p=document.getElementById(id),o=p.hidden;document.querySelectorAll(".pan").forEach(x=>x.hidden=true);p.hidden=!o;if(id=="chat"&&o){ub();rc();document.getElementById("ci").focus()}}
+function sendC(){const i=document.getElementById("ci"),t=i.value.trim();if(!t||local||!room)return;i.value="";chat.push({s:me,n:prof.n,a:prof.a,t:t.slice(0,120)});rc();seenC=chat.length;api("POST",{m:{s:me,n:prof.n,a:prof.a,t}},"&act=chat").catch(()=>{})}
+function syncSnd(){document.getElementById("vol").value=SFX.vol;document.getElementById("mt").textContent=SFX.mute?"🔇 Suara mati":"🔊 Suara nyala"}
+
+/* ---------- LAYOUT ACAK TIAP GAME ---------- */
+function genSnake(){const used=new Set([1,36]),sn={},ld={};
+ const pick=(lo,hi)=>{let n;do n=lo+rnd(hi-lo+1);while(used.has(n));used.add(n);return n};
+ for(let i=0;i<4;i++){const a=pick(2,28);ld[a]=pick(a+5,35)}
+ for(let i=0;i<4;i++){const a=pick(10,35);sn[a]=pick(2,a-5)}
+ return{sn,ld,sq:[...Array(6)].map(()=>pick(2,35))}}
+const PP=[["🍜","Warung Bakso"],["☕","Kafe Kopi"],["🎬","Bioskop"],["🌳","Taman Kota"],["🏖️","Pantai"],["🛍️","Mall"],["🏢","Apartemen"],["🏨","Hotel"],["✈️","Bandara"],["🎡","Bianglala"],["🍦","Es Krim"],["🎤","Karaoke"],["🏔️","Gunung"],["🚂","Stasiun"],["🧋","Kedai Boba"],["🎮","Game Center"]];
+function genTiles(){const ps=shuf(PP).slice(0,9).map(([e,n])=>({e,n,p:60+20*rnd(9),t:"p"}));
+ const sp=[...Array(4)].map(()=>({e:"💌",n:"Kartu Tanya",p:0,t:"q"})).concat([{e:"🧾",n:"Pajak -50",p:0,t:"t"},{e:"🎁",n:"Bonus +50",p:0,t:"b"}]);
+ return[{e:"🏁",n:"START",p:0,t:"s"},...shuf(ps.concat(sp))]}
+
+/* ---------- DADU 3D ---------- */
+const ROT={1:[0,0],6:[0,180],2:[0,-90],5:[0,90],3:[-90,0],4:[90,0]};
+const dice=v=>`<div class=sc><div id=dc class=cube style="transform:rotateX(${ROT[v][0]}deg) rotateY(${ROT[v][1]}deg)">${[1,2,3,4,5,6].map(i=>`<i class=f${i}>${DI[i-1]}</i>`).join("")}</div></div>`;
+
 /* ---------- MONSTER & NAMA ACAK ---------- */
 const ADJ=["Gemoy","Mungil","Kocak","Ngantuk","Galak","Imut","Ceria","Baper","Lemot","Jago"],NOUN=["Bakpao","Boba","Mochi","Puding","Cilok","Donat","Seblak","Cireng","Kroket","Bolu"];
 const rname=()=>NOUN[rnd(10)]+ADJ[rnd(10)]+rnd(100);
@@ -176,8 +249,8 @@ const E={get 0(){return av(0)},get 1(){return av(1)}};
 const fresh=()=>({v:0,g:"menu",turn:0,pl:[prof,null],used:[],q:null,msg:"",rx:null,win:null});
 const api=async(m,b,q="")=>{const r=await fetch("/api?room="+room+q,{method:m,headers:{"x-pw":encodeURIComponent(pw)},body:b?JSON.stringify(b):undefined});if(!r.ok)throw r.status;return r.json()};
 async function commit(){st.v++;render();if(!local){try{await api("POST",st)}catch(e){}}}
-function kick(m){st=null;room="";pw="";local=false;ls("ldr_ses",null);err=m||"";render()}
-setInterval(async()=>{if(local||!room||!st)return;try{const r=await api("GET");if(r&&r.v>st.v){st=r;render()}}catch(e){if(e===404||e===403)kick("Room sudah ditutup atau dihapus 🗑️")}},1500);
+function kick(m){chat=[];seenC=0;rc();st=null;room="";pw="";local=false;ls("ldr_ses",null);err=m||"";render()}
+setInterval(async()=>{if(local||!room||!st)return;try{const r=await api("GET");if(r){adoptChat(r.chat);delete r.chat}if(r&&r.v>st.v){st=r;render()}}catch(e){if(e===404||e===403)kick("Room sudah ditutup atau dihapus 🗑️")}},1500);
 setInterval(()=>{if(!local&&room&&st)api("POST",null,"&act=ping").catch(()=>{})},30000);
 const can=()=>(local||me===st.turn)&&st.q==null&&st.win==null;
 
@@ -199,14 +272,14 @@ const home=()=>`<h1><span class=wig>💕</span> LDR Game Night <span class=wig>�
 <button class=mn onclick="jn()" style="width:100%;margin-top:6px">💌 Gabung</button>
 <hr><button class=bl onclick="lc()" style="width:100%">📱 Main berdua di 1 HP</button><p>${err}</p></div>`;
 async function mk(){const p=document.getElementById("pw1").value;if(p.length<3){err="Password minimal 3 karakter 🔑";return render()}
- pw=p;local=false;me=0;st=fresh();
+ pw=p;local=false;me=0;st=fresh();chat=[];seenC=0;rc();
  for(let i=0;i<5;i++){room=[...Array(4)].map(()=>"ABCDEFGHJKLMNPQRSTUVWXYZ"[rnd(24)]).join("");
   try{await api("POST",st,"&act=create");err="";ls("ldr_ses",{room,pw,me});return render()}catch(e){if(e!==409)break}}
  room="";pw="";st=null;err="Gagal bikin room, coba lagi ya 🥲";render()}
 async function jn(){room=document.getElementById("cd").value.trim().toUpperCase();pw=document.getElementById("pw2").value;
  if(!room||!pw){err="Isi kode & password dulu ya";return render()}
  try{const r=await api("GET"),i=r.pl[0]?r.pl[1]?-1:1:0;if(i<0){room="";pw="";err="Room sudah penuh 🙈";return render()}
-  st=r;me=i;local=false;st.pl[i]=prof;err="";ls("ldr_ses",{room,pw,me});commit()}
+  st=r;me=i;chat=[];seenC=0;adoptChat(r.chat);delete st.chat;seenC=chat.length;local=false;st.pl[i]=prof;err="";ls("ldr_ses",{room,pw,me});commit()}
  catch(e){st=null;room="";err=e===403?"Password salah 🔒":e===404?"Room nggak ketemu 🥲":"Koneksi bermasalah, coba lagi";pw="";render()}}
 function lc(){local=true;room="";st=fresh();st.pl[1]={n:rname(),a:rnd(1e6)};render()}
 async function out(){if(!confirm("Keluar dari room?"))return;if(!local){try{await api("POST",null,"&act=leave&slot="+me)}catch(e){}}kick("")}
@@ -220,10 +293,10 @@ function ask(){qask();commit()}
 function win(t){st.win=t;commit()}
 function roll(fn){if(rolling)return;rolling=true;let n=0;const iv=setInterval(()=>{const d=document.getElementById("dc");if(d)d.textContent=DI[rnd(6)];if(++n>8){clearInterval(iv);rolling=false;fn(1+rnd(6))}},70)}
 function react(e){st.rx={e,id:Date.now()};commit()}
-function fl(e){for(let i=0;i<8;i++){const s=document.createElement("span");s.textContent=e;s.className="fl";s.style.left=10+rnd(80)+"%";s.style.animationDelay=i*.1+"s";document.body.appendChild(s);setTimeout(()=>s.remove(),2600)}}
-function go(g){st.g=g;st.turn=0;st.win=null;st.q=null;st.msg="";
- if(g=="snake")st.p=[1,1];
- if(g=="mono"){st.p=[0,0];st.cash=[1000,1000];st.own={};st.buy=null}
+function fl(e){SFX.boing();for(let i=0;i<8;i++){const s=document.createElement("span");s.textContent=e;s.className="fl";s.style.left=10+rnd(80)+"%";s.style.animationDelay=i*.1+"s";document.body.appendChild(s);setTimeout(()=>s.remove(),2600)}}
+function go(g){st.g=g;st.turn=rnd(2);st.hue=rnd(360);st.win=null;st.q=null;st.msg="";
+ if(g=="snake"){Object.assign(st,genSnake());st.p=[1,1]}
+ if(g=="mono"){st.p=[0,0];st.cash=[1000,1000];st.own={};st.buy=null;st.tl=genTiles()}
  if(g=="uno")initUno();
  commit()}
 const menu=()=>{const w=!local&&!(st.pl[0]&&st.pl[1]),d=w?"disabled":"";return `<h1 style="font-size:1.6rem">Mau main apa hari ini?</h1><div class=grid2>
@@ -234,48 +307,31 @@ const menu=()=>{const w=!local&&!(st.pl[0]&&st.pl[1]),d=w?"disabled":"";return `
 <p class=hint>${w?"⏳ Menunggu pasanganmu masuk. Kasih tahu kode <b>"+room+"</b> dan password-nya ya 💞":local?"Mode 1 HP: gantian pegang ya 🤝":"Kode room: <b>"+room+"</b> 💞"}</p>`};
 
 /* ---------- ULAR TANGGA ---------- */
-const SN={16:6,27:11,32:19,35:24},LD={3:13,8:21,18:29,22:33},SQ=[5,10,14,20,26,30];
 function snake(){let c="";for(let r=5;r>=0;r--)for(let k=0;k<6;k++){const n=r*6+(r%2?6-k:k+1);
- const e=SN[n]?"🐍":LD[n]?"🪜":SQ.includes(n)?"💌":n==36?"🏆":"";
- const bg=SN[n]?"#ffd0d9":LD[n]?"#c9f5e6":SQ.includes(n)?"#fff1b8":"#fff";
+ const e=st.sn[n]?"🐍":st.ld[n]?"🪜":st.sq.includes(n)?"💌":n==36?"🏆":"";
+ const bg=st.sn[n]?"#ffd0d9":st.ld[n]?"#c9f5e6":st.sq.includes(n)?"#fff1b8":"hsl("+st.hue+",90%,95%)";
  c+=`<div class=c style="background:${bg}"><b>${n}</b><span class=e>${e}</span>${st.p.map((p,i)=>p==n?`<span class="pw p${i}">${E[i]}</span>`:"").join("")}</div>`}
- return `<div class=sb>${c}</div>`+turnbar(`<span id=dc class=dice>${DI[(st.d||1)-1]}</span><button class=pk ${can()?"":"disabled"} onclick="sroll()">Kocok dadu 🎲</button>`)+`<p class=hint>🐍 turun · 🪜 naik · 💌 kartu pertanyaan</p>`}
+ return `<div class=stage><div class=sb>${c}</div></div>`+turnbar(`${dice(st.d||1)}<button class=pk ${can()?"":"disabled"} onclick="sroll()">Kocok dadu 🎲</button>`)+`<p class=hint>🐍 turun · 🪜 naik · 💌 kartu pertanyaan</p>`}
 function sroll(){if(!can())return;roll(d=>{const t=st.turn;let p=st.p[t]+d;st.d=d;if(p>36)p=72-p;
  st.msg=`${N(t)} dapat ${d}`;
  if(p==36){st.p[t]=36;return win(t)}
- if(SN[p]){p=SN[p];st.msg+=" · 🐍 digigit ular!"}else if(LD[p]){p=LD[p];st.msg+=" · 🪜 naik tangga!"}
- st.p[t]=p;st.turn=1-t;if(SQ.includes(p))qask();commit()})}
+ if(st.sn[p]){p=st.sn[p];st.msg+=" · 🐍 digigit ular!"}else if(st.ld[p]){p=st.ld[p];st.msg+=" · 🪜 naik tangga!"}
+ st.p[t]=p;st.turn=1-t;if(st.sq.includes(p))qask();commit()})}
 
 /* ---------- MONOPOLI ---------- */
-const T=`🏁|START|0|s
-🍜|Warung Bakso|60|p
-💌|Kartu Tanya|0|q
-☕|Kafe Kopi|80|p
-🎬|Bioskop|100|p
-🧾|Pajak -50|0|t
-🌳|Taman Kota|120|p
-💌|Kartu Tanya|0|q
-🏖️|Pantai|140|p
-🛍️|Mall|160|p
-💌|Kartu Tanya|0|q
-🎁|Bonus +50|0|b
-🏢|Apartemen|180|p
-🏨|Hotel|200|p
-💌|Kartu Tanya|0|q
-✈️|Bandara|220|p`.split("\n").map(l=>{const a=l.split("|");return{e:a[0],n:a[1],p:+a[2],t:a[3]}});
 const POS=i=>i<5?[1,i+1]:i<8?[i-3,5]:i<13?[5,13-i]:[17-i,1];
-function mono(){const c=T.map((t,i)=>{const[r,k]=POS(i),o=st.own[i];
- return `<div class=mc style="grid-area:${r}/${k};${o!=null?"background:"+(o?"#ffd0d9":"#cfeaff"):""}"><span>${t.e}</span><small>${t.n}</small>${t.p?`<small>${o!=null?E[o]:"$"+t.p}</small>`:""}${st.p.map((p,j)=>p==i?`<span class="pw p${j}">${E[j]}</span>`:"").join("")}</div>`}).join("");
- const b=st.buy,ui=b!=null?(can()?`<div>Beli ${T[b].n} $${T[b].p}?</div><div class=row><button class=mn onclick="buy(1)">Beli 🏠</button><button onclick="buy(0)">Skip</button></div>`:"<div>Lagi mikir mau beli... 🤔</div>"):`<button class=pk ${can()?"":"disabled"} onclick="mroll()">Kocok 🎲</button>`;
- return `<div class=mb>${c}<div class=mid>${st.cash.map((n,i)=>`<div>${E[i]} $${st.cash[i]}</div>`).join("")}<span id=dc class=dice>${DI[(st.d||1)-1]}</span>${ui}</div></div>`+turnbar(`<button onclick="fin()">Akhiri game</button>`)+`<p class=hint>Lewat START +$200 · sewa = 30% harga</p>`}
+function mono(){const c=st.tl.map((t,i)=>{const[r,k]=POS(i),o=st.own[i];
+ return `<div class=mc style="grid-area:${r}/${k};background:${o!=null?(o?"#ffd0d9":"#cfeaff"):"hsl("+st.hue+",90%,95%)"}"><span>${t.e}</span><small>${t.n}</small>${t.p?`<small>${o!=null?E[o]:"$"+t.p}</small>`:""}${st.p.map((p,j)=>p==i?`<span class="pw p${j}">${E[j]}</span>`:"").join("")}</div>`}).join("");
+ const b=st.buy,ui=b!=null?(can()?`<div>Beli ${st.tl[b].n} $${st.tl[b].p}?</div><div class=row><button class=mn onclick="buy(1)">Beli 🏠</button><button onclick="buy(0)">Skip</button></div>`:"<div>Lagi mikir mau beli... 🤔</div>"):`<button class=pk ${can()?"":"disabled"} onclick="mroll()">Kocok 🎲</button>`;
+ return `<div class=stage><div class=mb>${c}<div class=mid>${st.cash.map((n,i)=>`<div>${E[i]} $${st.cash[i]}</div>`).join("")}${dice(st.d||1)}${ui}</div></div></div>`+turnbar(`<button onclick="fin()">Akhiri game</button>`)+`<p class=hint>Lewat START +$200 · sewa = 30% harga</p>`}
 function nextT(){if(st.cash[st.turn]<0)return win(1-st.turn);st.turn=1-st.turn;commit()}
-function mroll(){if(!can()||st.buy!=null)return;roll(d=>{const t=st.turn,o=st.p[t],n=(o+d)%16,x=T[n],ow=st.own[n];st.d=d;st.p[t]=n;st.msg=`${N(t)} dapat ${d}`;
+function mroll(){if(!can()||st.buy!=null)return;roll(d=>{const t=st.turn,o=st.p[t],n=(o+d)%16,x=st.tl[n],ow=st.own[n];st.d=d;st.p[t]=n;st.msg=`${N(t)} dapat ${d}`;
  if(n<o){st.cash[t]+=200;st.msg+=" · lewat START +$200"}
  if(x.t=="p"){if(ow==null){st.buy=n;return commit()}if(ow!=t){const r=Math.round(x.p*.3);st.cash[t]-=r;st.cash[ow]+=r;st.msg+=` · bayar sewa $${r}`}}
  else if(x.t=="q")qask();else if(x.t=="t")st.cash[t]-=50;else if(x.t=="b")st.cash[t]+=50;
  nextT()})}
-function buy(y){const t=st.turn,b=st.buy;if(y&&st.cash[t]>=T[b].p){st.cash[t]-=T[b].p;st.own[b]=t;st.msg=`${N(t)} beli ${T[b].n} 🏠`}st.buy=null;nextT()}
-function fin(){const w=[0,1].map(i=>st.cash[i]+Object.keys(st.own).filter(k=>st.own[k]==i).reduce((s,k)=>s+T[k].p,0));win(w[0]>=w[1]?0:1)}
+function buy(y){const t=st.turn,b=st.buy;if(y&&st.cash[t]>=st.tl[b].p){st.cash[t]-=st.tl[b].p;st.own[b]=t;st.msg=`${N(t)} beli ${st.tl[b].n} 🏠`}st.buy=null;nextT()}
+function fin(){const w=[0,1].map(i=>st.cash[i]+Object.keys(st.own).filter(k=>st.own[k]==i).reduce((s,k)=>s+st.tl[k].p,0));win(w[0]>=w[1]?0:1)}
 
 /* ---------- UNO ---------- */
 const CL={r:"#ff6b8b",y:"#ffb800",g:"#3fc79a",b:"#5aa9f0",w:"#3b2a4a"};
@@ -304,6 +360,7 @@ function drw(){if(!can()||st.wild)return;dr(st.turn,1);st.msg=`${N(st.turn)} amb
 
 /* ---------- RENDER ---------- */
 function render(){
+ document.getElementById("bchat").style.display=!st||local?"none":"";
  if(!st){$.innerHTML=prof?home():profile();return}
  let h=`<div class=box style="display:flex;justify-content:space-between;padding:8px 12px"><span>${local?"📱 1 HP":"🔑 "+room} <button onclick="out()" style="padding:2px 8px;font-size:.8rem">🚪 Keluar</button></span><span>${E[0]} ${N(0)} · ${E[1]} ${N(1)}</span></div>`;
  h+=st.g=="menu"?menu():st.g=="snake"?snake():st.g=="mono"?mono():uno();
@@ -312,8 +369,15 @@ function render(){
  if(st.win!=null)h+=winbox();
  $.innerHTML=h;
  if(st.rx&&st.rx.id!=seenRx){seenRx=st.rx.id;fl(st.rx.e)}
+ if(st.q!=null&&st.q!==pq)SFX.card();pq=st.q;
+ if(st.win!=null&&pwn==null){SFX.win();fl("🎉");fl("🏆")}pwn=st.win;
+ const sig=JSON.stringify([st.g,st.p,st.top,st.own,st.cash]);
+ if(psig&&sig!==psig&&st.g!="menu"){if(/ular/.test(st.msg))SFX.down();else if(/tangga/.test(st.msg))SFX.up();else if(/beli/.test(st.msg))SFX.coin();else SFX.step()}psig=sig;
 }
+syncSnd();
+document.addEventListener("click",e=>{if(e.target.closest("button"))SFX.pop()});
+addEventListener("pointermove",e=>{const r=document.documentElement.style;r.setProperty("--ry",((e.clientX/innerWidth-.5)*12)+"deg");r.setProperty("--rx",(-(e.clientY/innerHeight-.5)*8)+"deg")});
 prof=ls("ldr_prof");const ses=ls("ldr_ses");
-if(ses&&prof){room=ses.room;pw=ses.pw;me=ses.me;api("GET").then(r=>{st=r;render()}).catch(()=>{room="";pw="";ls("ldr_ses",null);render()})}
+if(ses&&prof){room=ses.room;pw=ses.pw;me=ses.me;api("GET").then(r=>{adoptChat(r.chat);delete r.chat;st=r;render()}).catch(()=>{room="";pw="";ls("ldr_ses",null);render()})}
 render();
 </script></body></html>
