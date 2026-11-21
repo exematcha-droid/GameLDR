@@ -6,6 +6,8 @@ const hash = async (s) =>
   [...new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s)))]
     .map((b) => b.toString(16).padStart(2, "0")).join("");
 
+const wipe = async (s, room) => { for (const x of ["", "-chat", "-sig0", "-sig1"]) await s.delete(room + x); }; // hapus room + chat + sinyal voice
+
 export default async (req) => {
   const store = getStore({ name: "rooms", consistency: "strong" });
   const u = new URL(req.url);
@@ -17,7 +19,7 @@ export default async (req) => {
 
   const now = Date.now();
   let r = await store.get(room, { type: "json" });
-  if (r && now - r.t > TTL) { await store.delete(room); await store.delete(room + "-chat"); r = null; }
+  if (r && now - r.t > TTL) { await wipe(store, room); r = null; }
   const h = await hash(room + ":" + pw);
 
   if (act === "create") {
@@ -36,11 +38,16 @@ export default async (req) => {
     await store.setJSON(room + "-chat", c.slice(-40));
     return J({ ok: 1 });
   }
+  if (act === "sig") { // sinyal WebRTC untuk voice chat: tiap slot menulis ke key-nya sendiri, jadi tidak bentrok
+    const k = room + "-sig" + (u.searchParams.get("slot") === "1" ? 1 : 0);
+    if (req.method === "POST") { const l = await req.json(); await store.setJSON(k, Array.isArray(l) ? l.slice(-40) : []); return J({ ok: 1 }); }
+    return J((await store.get(k, { type: "json" })) || []);
+  }
   if (act === "ping") { r.t = now; await store.setJSON(room, r); return J({ ok: 1 }); }
   if (act === "leave") {
     const i = +u.searchParams.get("slot"), s = r.s;
     if (s.pl && (i === 0 || i === 1)) s.pl[i] = null;
-    if (!s.pl || (!s.pl[0] && !s.pl[1])) { await store.delete(room); await store.delete(room + "-chat"); return J({ ok: 1 }); } // kosong = hapus
+    if (!s.pl || (!s.pl[0] && !s.pl[1])) { await wipe(store, room); return J({ ok: 1 }); } // kosong = hapus
     s.g = "menu"; s.q = null; s.win = null; s.v++;
     r.s = s; r.t = now;
     await store.setJSON(room, r);
