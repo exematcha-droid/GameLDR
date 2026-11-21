@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="id"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>LDR Game Night 💕</title>
+<title>LDR Game Night</title><link rel=icon href="img/heart.png">
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#ece6ff;--pk:#ff6b8b;--yl:#ffd65a;--mn:#7fe0c0;--bl:#8ecbff;--ink:#3b2a4a}
@@ -78,125 +78,90 @@ input[type=range]{padding:0;border:0;box-shadow:none}
 .bb{background:#fff1b8;border:2px solid var(--ink);border-radius:14px;padding:4px 10px;max-width:75%;word-break:break-word}
 .m.me .bb{background:#ffd0d9}.bb small{display:block;font-size:.65rem;opacity:.7}.mm .mon{width:34px;height:34px}
 .pan .row input{flex:1;width:auto;margin:0}
-</style></head><body><div id="app"></div>
-<div id=dock><button id=bchat onclick="tp('chat')" title="Chat">💬<b id=ub></b></button><button onclick="tp('snd')" title="Suara">🔊</button></div>
-<div class=pan id=snd hidden><b>🔊 Volume</b><input type=range id=vol min=0 max=1 step=.05 oninput="SFX.set(+this.value)"><button id=mt onclick="SFX.tog();syncSnd()" style="width:100%"></button></div>
-<div class=pan id=chat hidden><div id=cl></div><div class=row><input id=ci maxlength=120 placeholder="Tulis pesan manis..." onkeydown="if(event.key=='Enter')sendC()"><button class=pk onclick="sendC()">➤</button></div></div>
-<script>
-const Q=`Apa mimpi terbesarmu?|What is your biggest dream?
-Apa kenangan masa kecil favoritmu?|What is your favorite childhood memory?
-Kapan pertama kali kamu merasa jatuh cinta padaku?|When did you first fall for me?
-Apa yang paling kamu rindukan dariku saat jauh?|What do you miss most about me when we're apart?
-Apa ketakutan terbesarmu?|What is your biggest fear?
-Makanan apa yang bikin kamu bahagia?|What food makes you happy?
-Apa kesan pertamamu tentangku?|What was your first impression of me?
-Hal kecil apa yang bikin harimu lebih baik?|What small thing makes your day better?
-Kalau bisa teleport sekarang, kamu mau ke mana bersamaku?|If you could teleport now, where would we go together?
-Apa kebiasaan anehmu yang belum kuketahui?|What's a weird habit of yours I don't know yet?
-Lagu apa yang mengingatkanmu padaku?|Which song reminds you of me?
-Apa hal paling berani yang pernah kamu lakukan?|What is the bravest thing you've ever done?
-Bagaimana bayangan hari tua kita?|How do you picture us when we're old?
-Apa yang paling kamu syukuri hari ini?|What are you most grateful for today?
-Film apa yang ingin kamu tonton bersamaku?|What movie do you want to watch with me?
-Apa momen paling memalukan dalam hidupmu?|What's your most embarrassing moment?
-Apa bahasa cintamu?|What is your love language?
-Apa yang bikin kamu merasa dicintai?|What makes you feel loved?
-Kalau kita bertemu besok, apa yang pertama kamu lakukan?|If we met tomorrow, what's the first thing you'd do?
-Apa pelajaran hidup terpentingmu?|What's the most important life lesson you've learned?
-Siapa orang yang paling berpengaruh dalam hidupmu?|Who has influenced your life the most?
-Apa yang ingin kamu ubah dari dirimu?|What would you like to change about yourself?
-Apa liburan impianmu?|What is your dream vacation?
-Apa yang bikin kamu cemburu?|What makes you jealous?
-Kapan terakhir kali kamu menangis, dan kenapa?|When did you last cry, and why?
-Apa panggilan sayang favoritmu untukku?|What's your favorite nickname for me?
-Apa hal paling romantis yang pernah kamu lakukan?|What's the most romantic thing you've ever done?
-Seperti apa rumah impian kita?|What does our dream home look like?
-Kamu lebih suka pagi atau malam? Kenapa?|Morning or night person? Why?
-Apa hobi yang ingin kamu coba bersamaku?|What hobby do you want to try with me?
-Apa yang kamu pelajari dari hubungan LDR kita?|What have you learned from our long-distance relationship?
-Apa hal tersulit dari LDR menurutmu?|What's the hardest part of LDR for you?
-Apa hal terbaik dari LDR kita?|What's the best part of our LDR?
-Apa yang ingin kamu lakukan bareng saat kita bertemu nanti?|What do you want to do together when we finally meet?
-Apa yang kamu pikirkan sebelum tidur?|What do you think about before sleeping?
-Siapa tokoh fiksi yang paling mirip denganmu?|Which fictional character is most like you?
-Kekuatan super apa yang kamu mau?|What superpower would you want?
-Apa yang bikin kamu tertawa terbahak-bahak?|What makes you laugh out loud?
-Hal apa dariku yang bikin kamu gemas?|What do I do that you find adorable?
-Apa rahasia kecil yang belum pernah kamu ceritakan?|What little secret have you never told anyone?
-Pencapaian apa yang paling kamu banggakan?|What achievement are you proudest of?
-Bagaimana caramu menghadapi stres?|How do you deal with stress?
-Apa yang kamu butuhkan saat sedang sedih?|What do you need when you're sad?
-Kalau menang lotre, apa yang pertama kamu beli?|If you won the lottery, what would you buy first?
-Nilai hidup apa yang paling penting bagimu?|What value matters most to you in life?
-Apa yang bikin kamu tertarik padaku?|What attracted you to me?
-Tempat mana yang bikin kamu merasa paling tenang?|Where do you feel most at peace?
-Apa yang ingin kamu ucapkan tapi belum sempat?|What have you wanted to say but haven't yet?
-Seperti apa pernikahan impianmu?|What does your dream wedding look like?
-Berapa anak dan hewan peliharaan yang kamu mau?|How many kids and pets do you want?
-Siapa nama anak kita nanti?|What would we name our kids?
-Apa kebiasaanku yang paling kamu suka?|What habit of mine do you like the most?
-Apa kebiasaanku yang kadang bikin kamu kesal?|What habit of mine sometimes annoys you?
-Kapan kamu merasa paling dekat denganku?|When did you feel closest to me?
-Seperti apa kencan virtual paling seru versimu?|What's your idea of the best virtual date?
-Kata-kata apa yang ingin sering kamu dengar dariku?|What words do you want to hear from me more often?
-Apa kenangan favoritmu tentang kita?|What's your favorite memory of us?
-Di mana kamu melihat dirimu 5 tahun lagi?|Where do you see yourself in 5 years?
-Apa hal yang paling kamu sesali?|What is something you regret?
-Siapa sahabat terbaikmu dan kenapa?|Who is your best friend and why?
-Seperti apa akhir pekan idealmu?|What does your perfect weekend look like?
-Apa kelemahan terbesarmu?|What is your biggest weakness?
-Apa kelebihan terbesarmu menurutmu?|What do you think is your greatest strength?
-Hewan apa yang menggambarkan dirimu?|Which animal describes you best?
-Apa hal teraneh yang pernah kamu makan?|What's the weirdest thing you've eaten?
-Apa cita-cita masa kecilmu?|What did you want to be as a kid?
-Bagaimana cara kita menyelesaikan masalah dengan baik?|How can we best solve problems together?
-Apa yang membuatmu merasa aman bersamaku?|What makes you feel safe with me?
-Apa yang bikin kamu ragu dalam hubungan ini?|What makes you doubt things in this relationship?
-Apa yang kamu harap lebih sering kulakukan?|What do you wish I did more?
-Kapan kamu merasa bangga padaku?|When have you been proud of me?
-Kejutan apa yang ingin kamu berikan padaku?|What surprise would you love to give me?
-Apa kado terbaik yang pernah kamu terima?|What's the best gift you've ever received?
-Apa yang ingin kamu lakukan sebelum umur 40?|What do you want to do before you turn 40?
-Bagaimana pendapatmu tentang uang dan masa depan?|How do you feel about money and the future?
-Kota mana yang ingin kita tinggali bersama?|Which city would you like us to live in?
-Apa yang bikin kamu insecure?|What makes you feel insecure?
-Apa yang kamu lakukan saat kangen aku?|What do you do when you miss me?
-Apa mimpi teraneh yang pernah kamu alami?|What's the strangest dream you've had?
-Tradisi apa yang ingin kita buat berdua?|What tradition do you want us to create?
-Masakan apa yang ingin kamu buat bersamaku?|What dish do you want to cook together?
-Lagu apa yang ingin kamu nyanyikan untukku?|What song would you sing for me?
-Apa hal paling gila yang ingin kamu lakukan bersamaku?|What's the craziest thing you want to do with me?
-Bagaimana kamu ingin dikenang?|How do you want to be remembered?
-Apa buku atau serial favoritmu?|What's your favorite book or series?
-Apa yang kamu pelajari dari kegagalan?|What have you learned from failure?
-Pertengkaran kita yang mana yang paling kamu ingat?|Which argument of ours do you remember most?
-Apa yang bikin kamu bersyukur punya aku?|What makes you grateful to have me?
-Apa tiga kata yang menggambarkan hubungan kita?|What three words describe our relationship?
-Apa yang ingin kamu perbaiki dalam hubungan kita?|What would you improve in our relationship?
-Apa yang kamu lakukan pertama kali saat bangun tidur?|What do you do first when you wake up?
-Apa rahasia kebahagiaan menurutmu?|What's the secret to happiness in your opinion?
-Janji kecil apa yang ingin kamu buat untukku?|What small promise do you want to make to me?
-Siapa yang lebih sabar di antara kita?|Which of us is more patient?
-Sifatku yang mana yang ingin kamu tiru?|Which of my traits do you admire?
-Apa yang kamu bayangkan saat kita bertemu lagi?|What do you imagine for our next reunion?
-Apa yang paling bikin kamu rindu rumah?|What do you miss most about home?
-Bagaimana kamu ingin merayakan ulang tahun hubungan kita?|How do you want to celebrate our anniversary?
-Apa harapanmu untuk kita setahun ke depan?|What do you hope for us in the next year?
-Apa yang ingin kamu katakan padaku sekarang?|What do you want to tell me right now?`.split("\n").map(l=>l.split("|"));
 
+.ic{width:1.3em;height:1.3em;vertical-align:-.3em;display:inline-block}
+body{background:radial-gradient(#d6cbff 2px,transparent 2px) 0 0/22px 22px,linear-gradient(180deg,#e7defe,#fde4ef 55%,#dff2ff) fixed}
+#app{position:relative;z-index:1;padding-bottom:120px}
+#bgl{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:0}
+.bgf{position:absolute;bottom:-90px;opacity:.5;animation:fly linear infinite}
+@keyframes fly{to{transform:translateY(-120vh) rotate(360deg)}}
+h1 .ic,.wig .ic{width:1.1em;height:1.1em}
+.hero{text-align:center;padding-top:6px}
+img.logo{width:128px;height:128px;animation:bob 2.4s ease-in-out infinite;filter:drop-shadow(0 8px 0 #3b2a4a33)}
+@keyframes bob{50%{transform:translateY(-10px) rotate(-5deg)}}
+.tag{margin:.2em 0 .7em;font-size:.9rem}
+.chips{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-bottom:6px}
+.chip{display:flex;gap:4px;align-items:center;background:#fff;border:2px solid var(--ink);border-radius:20px;padding:2px 10px 2px 6px;font-size:.78rem;box-shadow:0 3px 0 var(--ink)}
+.gcard{display:flex;flex-direction:column;align-items:center;gap:2px;padding:14px 8px;font-size:1.05rem;line-height:1.2}
+.gcard .big{width:84px;height:84px;transition:transform .2s}
+.gcard:hover:not(:disabled) .big{transform:scale(1.15) rotate(-6deg)}
+.gcard small{font-weight:400;font-size:.7rem;opacity:.85}
+.c .e .ic{width:1.7em;height:1.7em;vertical-align:middle}
+.mc>span:first-child .ic{width:1.6em;height:1.6em}
+.uc .ic{width:30px;height:30px}.uc.back .ic{width:40px;height:40px}
+.cube i .ic{width:78%;height:78%}
+.fl .ic{width:56px;height:56px}
+.qc h1 .ic{width:56px;height:56px;animation:bob 1.2s infinite}
+#dock{left:50%;right:auto;transform:translateX(-50%);bottom:8px;gap:8px;background:#fff;border:3px solid var(--ink);border-radius:26px;padding:6px 10px;box-shadow:0 5px 0 var(--ink)}
+#dock button.dk{width:auto;height:auto;border-radius:16px;padding:4px 12px;display:flex;flex-direction:column;align-items:center;font-size:.7rem;box-shadow:0 3px 0 var(--ink);background:var(--yl)}
+#dock button.dk .ic{width:30px;height:30px}
+#dock button.dk.act{background:var(--pk)}#dock button.dk.live{background:var(--mn)}
+.pan{right:auto;left:50%;transform:translateX(-50%);bottom:96px;width:min(94vw,380px);max-height:68vh;overflow:auto}
+.ph{font-weight:700;font-size:1.1rem;display:flex;gap:6px;align-items:center;margin-bottom:6px}
+.sl{display:block;margin:6px 0;font-size:.85rem}.sl input{margin:2px 0}
+.stk{display:flex;gap:4px;overflow-x:auto;padding:4px 2px 10px}
+.stk button{padding:2px;border-radius:12px;flex:none;box-shadow:0 3px 0 var(--ink);background:#fff}.stk .ic{width:32px;height:32px}
+.bb.sk{background:none;border:0;padding:0}.stk1{width:84px;height:84px}
+.vrow{display:flex;gap:14px;justify-content:center;margin:8px 0}
+.vp{text-align:center;font-size:.8rem}.vp .av{display:inline-block;border-radius:50%;padding:4px;border:4px solid transparent;background:#f3eeff}
+.vp.talk .av{border-color:var(--mn);box-shadow:0 0 0 6px #7fe0c066;animation:bob .5s infinite}.vp .mon{width:68px;height:68px;display:block}
+#toast{position:fixed;top:10px;left:50%;transform:translateX(-50%);z-index:50;display:flex;flex-direction:column;gap:6px;align-items:center;pointer-events:none}
+.tst{background:#fff;border:3px solid var(--ink);border-radius:16px;box-shadow:0 4px 0 var(--ink);padding:5px 14px 5px 8px;display:flex;gap:6px;align-items:center;font-weight:600;animation:pop .35s}
+</style></head><body><div id="app"></div>
+<div id=bgl></div><div id=toast></div>
+<div id=dock>
+<button class=dk id=bsnd data-p=snd onclick="tp('snd')"><img class=ic src=img/speaker.png alt=""><span>Suara</span></button>
+<button class=dk id=bvoice data-p=voice onclick="tp('voice')"><img class=ic src=img/mic.png alt=""><span>Voice</span></button>
+<button class=dk id=bchat data-p=chat onclick="tp('chat')"><img class=ic src=img/chat.png alt=""><span>Chat</span><b id=ub></b></button></div>
+<div class=pan id=snd hidden><div class=ph><img class=ic src=img/gear.png alt=""> Pengaturan Suara</div>
+<label class=sl>Volume utama<input type=range id=v_m min=0 max=1 step=.05 oninput="SFX.setv('m',+this.value)"></label>
+<label class=sl>Musik latar<input type=range id=v_b min=0 max=1 step=.05 oninput="SFX.setv('b',+this.value)"></label>
+<label class=sl>Efek suara<input type=range id=v_s min=0 max=1 step=.05 oninput="SFX.setv('s',+this.value)"></label>
+<div class=row><button id=mt class=bl onclick="SFX.tog();syncSnd()"></button><button id=bg class=mn onclick="SFX.bgmTog();syncSnd()"></button></div>
+<button class=pk style="width:100%;margin-top:8px" onclick="SFX.win()"><img class=ic src=img/music.png alt=""> Tes suara</button></div>
+<div class=pan id=chat hidden><div class=ph><img class=ic src=img/chat.png alt=""> Chat berdua</div><div id=cl></div><div class=stk id=stk></div>
+<div class=row><input id=ci maxlength=120 placeholder="Tulis pesan manis..." onkeydown="if(event.key=='Enter')sendC()"><button class=pk onclick="sendC()"><img class=ic src=img/send.png alt=""></button></div></div>
+<div class=pan id=voice hidden><div class=ph><img class=ic src=img/mic.png alt=""> Voice chat</div>
+<div class=vrow><div id=vp0></div><div id=vp1></div></div><p class=hint id=vst>Voice mati</p>
+<div class=row><button id=vb class=mn onclick="VC.tog()"></button><button id=vm class=bl onclick="VC.mute()" hidden></button></div>
+<label class=sl>Volume suara pasangan<input type=range id=vvol min=0 max=1 step=.05 oninput="VC.vol(+this.value)"></label>
+<p class=hint>Kalian berdua harus menyalakan voice. Izinkan akses mikrofon saat diminta.</p></div>
+<script src="questions.js"></script>
+<script>
 const $=document.getElementById("app"),DI="⚀⚁⚂⚃⚄⚅",rnd=n=>Math.floor(Math.random()*n);
 let st=null,me=0,room="",pw="",local=false,err="",rolling=false,seenRx=0,prof=null,tmp=null;
 const esc=s=>String(s).replace(/[&<>"'`]/g,"");
 const ls=(k,v)=>{try{if(v===undefined)return JSON.parse(localStorage.getItem(k));v===null?localStorage.removeItem(k):localStorage.setItem(k,JSON.stringify(v))}catch(e){return null}};
 
+const ic=(n,c="")=>`<img class="ic ${c}" src="img/${n}.png" alt="">`;
+const EM={"💕":"heart","❤":"heart","💞":"hearts","👾":"mascot","🎲":"dice","💬":"chat","🔊":"speaker","🔇":"mute","➤":"send","🐍":"snake","🪜":"ladder","💌":"letter","🏆":"trophy","🏠":"house","💰":"coin","🃏":"cards","🔑":"key","⏳":"hourglass","📱":"phone","🤝":"hands","🙈":"monkey","🤔":"think","✔":"check","⛔":"skip","🌈":"rainbow","🂠":"cardback","✨":"sparkle","🔔":"bell","😘":"kiss","😂":"laugh","🥺":"plead","😡":"angry","🥲":"cry","🚪":"door","✏":"pencil","🎉":"party","🔒":"lock","🗑":"trash","👋":"wave","👻":"ghost","🎁":"gift","🧾":"receipt","🏁":"flag","🍜":"bakso","☕":"coffee","🎬":"cinema","🌳":"tree","🏖":"beach","🛍":"mall","🏢":"apartment","🏨":"hotel","✈":"plane","🎡":"ferris","🍦":"icecream","🎤":"mic","🏔":"mountain","🚂":"train","🧋":"boba","🎮":"controller","⚀":"d1","⚁":"d2","⚂":"d3","⚃":"d4","⚄":"d5","⚅":"d6"};
+const EMR=new RegExp("("+Object.keys(EM).join("|")+")\uFE0F?","g");
+const emo=h=>String(h).replace(EMR,(m,k)=>ic(EM[k]));
 /* ---------- SOUND (dibuat dari kode, tanpa file) ---------- */
-const SFX=(()=>{let ac,vol=+(ls("ldr_vol")??.6),mute=!!ls("ldr_mute");
- const tone=(f,t=.12,type="sine",at=0,g=1,sl)=>{if(mute||vol<=0)return;try{const c=ac||(ac=new(window.AudioContext||window.webkitAudioContext)());if(c.state=="suspended")c.resume();
-  const o=c.createOscillator(),n=c.createGain(),s=c.currentTime+at;o.type=type;o.frequency.setValueAtTime(f,s);if(sl)o.frequency.exponentialRampToValueAtTime(sl,s+t);
-  n.gain.setValueAtTime(.0001,s);n.gain.exponentialRampToValueAtTime(.3*vol*g,s+.01);n.gain.exponentialRampToValueAtTime(.0001,s+t);o.connect(n);n.connect(c.destination);o.start(s);o.stop(s+t+.02)}catch(e){}};
- return{get vol(){return vol},get mute(){return mute},set(v){vol=v;ls("ldr_vol",v)},tog(){mute=!mute;ls("ldr_mute",mute)},
+const SFX=(()=>{let ac,mg,sg,mu,tm=0,nx=0,sp=0;const V={m:+(ls("ldr_vm")??.8),s:+(ls("ldr_vs")??.8),b:+(ls("ldr_vb")??.4)};let mute=!!ls("ldr_mute"),bgm=ls("ldr_bgm")!==false;
+ const ap=()=>{if(!ac)return;mg.gain.value=mute?0:V.m;sg.gain.value=V.s;mu.gain.value=V.b*.45};
+ const cx=()=>{if(!ac){ac=new(window.AudioContext||window.webkitAudioContext)();mg=ac.createGain();sg=ac.createGain();mu=ac.createGain();sg.connect(mg);mu.connect(mg);mg.connect(ac.destination);ap()}if(ac.state=="suspended")ac.resume();return ac};
+ const nt=(f,s,t,type,g,bus,sl)=>{const o=ac.createOscillator(),n=ac.createGain();o.type=type;o.frequency.setValueAtTime(f,s);if(sl)o.frequency.exponentialRampToValueAtTime(sl,s+t);n.gain.setValueAtTime(.0001,s);n.gain.exponentialRampToValueAtTime(.3*g,s+.015);n.gain.exponentialRampToValueAtTime(.0001,s+t);o.connect(n);n.connect(bus);o.start(s);o.stop(s+t+.03)};
+ const tone=(f,t=.12,type="sine",at=0,g=1,sl)=>{if(mute||V.m<=0||V.s<=0)return;try{cx();nt(f,ac.currentTime+at,t,type,g,sg,sl)}catch(e){}};
+ const M=[5,-1,7,5,4,-1,2,3,4,-1,5,4,2,-1,0,-1,5,-1,6,5,3,-1,2,0,2,-1,3,4,6,5,3,-1],PN=[261.63,293.66,329.63,392,440,523.25,587.33,659.25,783.99,880],BS=[130.81,110,87.31,98];
+ const sched=()=>{while(nx<ac.currentTime+.35){const k=M[sp];if(k>=0)nt(PN[k],nx,.28,"triangle",.5,mu);if(sp%4==0)nt(BS[sp>>3],nx,.55,"sine",.9,mu);nx+=.3125;sp=(sp+1)%32}};
+ const play=()=>{if(tm||!bgm||mute)return;try{cx();nx=ac.currentTime+.1;tm=setInterval(sched,100)}catch(e){}};
+ const halt=()=>{clearInterval(tm);tm=0};
+ document.addEventListener("visibilitychange",()=>{if(ac)document.hidden?ac.suspend():ac.resume()});
+ return{V,get mute(){return mute},get bgm(){return bgm},
+  setv(k,v){V[k]=v;ls("ldr_v"+k,v);ap()},tog(){mute=!mute;ls("ldr_mute",mute);ap();mute?halt():play()},bgmTog(){bgm=!bgm;ls("ldr_bgm",bgm);bgm?play():halt()},unlock(){try{cx();play()}catch(e){}},
   pop:()=>tone(600,.08,"sine",0,.8,900),
-  dice:()=>[0,1,2,3,4,5].forEach(i=>tone(250+rnd(300),.06,"square",i*.12,.4)),
+  dice:()=>[0,1,2,3,4,5,6].forEach(i=>tone(220+rnd(300),.06,"square",i*.1,.35)),
   step:()=>tone(520,.09,"triangle",0,.8,780),
   up:()=>[523,659,784,1047].forEach((f,i)=>tone(f,.12,"triangle",i*.08)),
   down:()=>tone(700,.5,"sawtooth",0,.6,120),
@@ -204,17 +169,56 @@ const SFX=(()=>{let ac,vol=+(ls("ldr_vol")??.6),mute=!!ls("ldr_mute");
   card:()=>{tone(900,.06,"triangle",0,.7,400);tone(1200,.1,"triangle",.07,.6)},
   win:()=>[523,659,784,659,784,1047].forEach((f,i)=>tone(f,.18,"triangle",i*.12)),
   chat:()=>{tone(880,.08);tone(1320,.12,"sine",.09)},
+  send:()=>tone(700,.07,"sine",0,.6,1000),
+  turn:()=>{tone(784,.1,"triangle");tone(1047,.18,"triangle",.1)},
+  join:()=>[523,659,784].forEach((f,i)=>tone(f,.14,"sine",i*.1)),
+  voice:on=>on?[659,988].forEach((f,i)=>tone(f,.12,"sine",i*.1)):[988,659].forEach((f,i)=>tone(f,.12,"sine",i*.1)),
   boing:()=>tone(200,.3,"sine",0,1,700)}})();
-let pq=null,pwn=null,psig=null,chat=[],seenC=0;
+let pq=null,pwn=null,psig=null,chat=[],seenC=0,pt=null,pn=0;
 const shuf=a=>a.map(x=>[Math.random(),x]).sort((a,b)=>a[0]-b[0]).map(x=>x[1]);
 
 /* ---------- CHAT ---------- */
-function rc(){const l=document.getElementById("cl");l.innerHTML=chat.map(m=>`<div class="m ${m.s==me?"me":""}"><span class=mm>${mon(m.a)}</span><div class=bb><small>${esc(m.n)}</small>${esc(m.t)}</div></div>`).join("")||"<p class=hint>Belum ada pesan. Sapa dulu yuk 👋</p>";l.scrollTop=l.scrollHeight}
+const STK=["heart","kiss","laugh","plead","angry","cry","party","gift","boba","hands","wave","sparkle","star","ghost","hearts","mascot"];
+function rc(){const l=document.getElementById("cl");l.innerHTML=emo(chat.map(m=>{const k=/^::(\w+)::$/.exec(m.t),s=k&&STK.includes(k[1]);return `<div class="m ${m.s==me?"me":""}"><span class=mm>${mon(m.a)}</span><div class="bb${s?" sk":""}"><small>${esc(m.n)}</small>${s?ic(k[1],"stk1"):esc(m.t)}</div></div>`}).join("")||"<p class=hint>Belum ada pesan. Sapa dulu yuk 👋</p>");l.scrollTop=l.scrollHeight}
 function ub(){const p=document.getElementById("chat"),el=document.getElementById("ub");if(!p.hidden)seenC=chat.length;const n=chat.length-seenC;el.textContent=n>0?n:""}
 function adoptChat(l){if(!l||l.length<chat.length)return;const add=l.slice(chat.length);chat=l;rc();if(add.some(m=>m.s!=me))SFX.chat();ub()}
-function tp(id){const p=document.getElementById(id),o=p.hidden;document.querySelectorAll(".pan").forEach(x=>x.hidden=true);p.hidden=!o;if(id=="chat"&&o){ub();rc();document.getElementById("ci").focus()}}
-function sendC(){const i=document.getElementById("ci"),t=i.value.trim();if(!t||local||!room)return;i.value="";chat.push({s:me,n:prof.n,a:prof.a,t:t.slice(0,120)});rc();seenC=chat.length;api("POST",{m:{s:me,n:prof.n,a:prof.a,t}},"&act=chat").catch(()=>{})}
-function syncSnd(){document.getElementById("vol").value=SFX.vol;document.getElementById("mt").textContent=SFX.mute?"🔇 Suara mati":"🔊 Suara nyala"}
+function tp(id){const p=document.getElementById(id),o=p.hidden;document.querySelectorAll(".pan").forEach(x=>x.hidden=true);document.querySelectorAll("#dock .dk").forEach(b=>b.classList.remove("act"));p.hidden=!o;if(o)document.querySelector(`#dock [data-p=${id}]`).classList.add("act");if(id=="chat"&&o){ub();rc();document.getElementById("ci").focus()}if(id=="voice"&&o)VC.ui()}
+function sendC(x){const i=document.getElementById("ci"),t=(x||i.value).trim();if(!t||local||!room)return;if(!x)i.value="";SFX.send();chat.push({s:me,n:prof.n,a:prof.a,t:t.slice(0,120)});rc();seenC=chat.length;api("POST",{m:{s:me,n:prof.n,a:prof.a,t:t.slice(0,120)}},"&act=chat").catch(()=>{})}
+function syncSnd(){const g=id=>document.getElementById(id);["m","b","s"].forEach(k=>g("v_"+k).value=SFX.V[k]);g("mt").innerHTML=ic(SFX.mute?"mute":"speaker")+(SFX.mute?" Suara mati":" Suara nyala");g("bg").innerHTML=ic("music")+(SFX.bgm?" Musik nyala":" Musik mati");g("vvol").value=ls("ldr_vv")??1;g("bsnd").querySelector("img").src="img/"+(SFX.mute?"mute":"speaker")+".png"}
+function toast(t,i="sparkle"){const d=document.createElement("div");d.className="tst";d.innerHTML=ic(i)+"<span>"+emo(t)+"</span>";document.getElementById("toast").appendChild(d);setTimeout(()=>d.remove(),3200)}
+function initBg(){const l=document.getElementById("bgl"),n=["heart","star","sparkle","boba","ghost","hearts","rainbow","gift","party","mascot","kiss","letter"];for(let i=0;i<16;i++){const m=document.createElement("img");m.src="img/"+n[i%n.length]+".png";m.alt="";m.className="bgf";m.style.cssText=`left:${rnd(95)}%;width:${34+rnd(40)}px;animation-duration:${16+rnd(22)}s;animation-delay:-${rnd(30)}s`;l.appendChild(m)}
+ document.getElementById("stk").innerHTML=STK.map(n=>`<button onclick="sendC('::${n}::')">${ic(n)}</button>`).join("")}
+
+/* ---------- VOICE CHAT (WebRTC, sinyal lewat /api?act=sig) ---------- */
+const VC=(()=>{let on=false,stream,pc,aud,sid,peer=null,pcPeer=null,seen=new Set(),out=[],n=0,tmr,ft=0,busy=0,pend=[],mic=true,talk=[0,0];const W={};
+ const ICE={iceServers:[{urls:"stun:stun.l.google.com:19302"},{urls:"stun:stun1.l.google.com:19302"}]},g=id=>document.getElementById(id);
+ const flush=()=>{ft=0;return api("POST",out,"&act=sig&slot="+me).catch(()=>{})};
+ const send=(t,to,d)=>{out.push({i:sid+"."+(++n),t,f:sid,to,d});if(out.length>40)out.shift();if(!ft)ft=setTimeout(flush,200)};
+ const stopW=k=>{if(W[k]){clearInterval(W[k].t);W[k].c.close().catch(()=>{});W[k]=0}};
+ const watch=(s,k)=>{stopW(k);try{const c=new(window.AudioContext||window.webkitAudioContext)(),a=c.createAnalyser();a.fftSize=256;c.createMediaStreamSource(s).connect(a);const b=new Uint8Array(a.frequencyBinCount);W[k]={c,t:setInterval(()=>{a.getByteFrequencyData(b);let m=0;for(const x of b)m+=x;const v=m/b.length>14?1:0;if(v!==talk[k]){talk[k]=v;ui()}},150)}}catch(e){}};
+ const ui=()=>{if(!g("vb"))return;const cs=pc?pc.connectionState:"";const t=!on?"Voice mati":!peer?"Voice nyala. Menunggu pasanganmu ikut menyalakan voice...":cs=="connected"?"Tersambung! Kalian bisa ngobrol sekarang":cs=="failed"?"Gagal tersambung (jaringan menolak). Matikan lalu nyalakan lagi ya":"Menghubungkan...";
+  g("vst").textContent=t;g("vb").innerHTML=ic(on?"micoff":"mic")+(on?" Matikan voice":" Nyalakan voice");g("vm").hidden=!on;g("vm").innerHTML=ic(mic?"mic":"micoff")+(mic?" Mic nyala":" Mic mati");g("bvoice").classList.toggle("live",on);
+  if(st)[0,1].forEach(i=>g("vp"+i).innerHTML=emo(`<div class="vp ${talk[i]?"talk":""}"><span class=av>${av(i)}</span><small>${N(i)}</small></div>`))};
+ const drop=k=>{if(pc){try{pc.close()}catch(e){}pc=null}pcPeer=null;if(!k)ui()};
+ const addI=m=>{if(!pc||pc.peer!=m.f)return;if(pc.remoteDescription)pc.addIceCandidate(m.d).catch(()=>{});else pend.push(m)};
+ const drain=()=>pend.splice(0).forEach(addI);
+ function mk(p){drop(1);pend=[];pc=new RTCPeerConnection(ICE);pc.peer=p;stream.getTracks().forEach(t=>pc.addTrack(t,stream));pc.onicecandidate=e=>e.candidate&&send("ice",p,e.candidate.toJSON());
+  pc.ontrack=e=>{aud.srcObject=e.streams[0];aud.play().catch(()=>{});watch(e.streams[0],1-me)};pc.onconnectionstatechange=()=>{if(pc&&pc.connectionState=="connected"){toast("Voice tersambung!","speaker");SFX.join()}ui()}}
+ async function call(){mk(peer);pcPeer=peer;const o=await pc.createOffer();await pc.setLocalDescription(o);send("offer",peer,pc.localDescription.toJSON())}
+ async function onOffer(m){mk(m.f);await pc.setRemoteDescription(m.d);drain();const a=await pc.createAnswer();await pc.setLocalDescription(a);send("answer",m.f,pc.localDescription.toJSON())}
+ async function tick(){if(busy||!on)return;busy=1;try{const l=await api("GET",null,"&act=sig&slot="+(1-me));
+  for(const m of l){if(seen.has(m.i))continue;seen.add(m.i);
+   if(m.t=="join")peer=m.f;else if(m.t=="bye"){if(m.f==peer)peer=null}
+   else if(m.to==sid){if(m.t=="offer")await onOffer(m);else if(m.t=="answer"){if(pc&&pc.peer==m.f&&!pc.remoteDescription){await pc.setRemoteDescription(m.d);drain()}}else if(m.t=="ice")addI(m)}}
+  if(me==0&&peer&&peer!==pcPeer)await call();
+  if(!peer&&pc){drop();toast("Pasangan menutup voice","mic")}
+  ui()}catch(e){}busy=0}
+ async function start(){if(!st||local||!room)return;if(!navigator.mediaDevices||!window.RTCPeerConnection){toast("Browser ini belum mendukung voice","mic");return}
+  try{stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}})}catch(e){toast("Izin mic ditolak atau mic tidak ada","micoff");return}
+  on=true;mic=true;sid=Date.now()+"-"+rnd(1e6);out=[];n=0;seen=new Set();peer=null;pend=[];
+  aud=aud||Object.assign(new Audio(),{autoplay:true});aud.volume=+(ls("ldr_vv")??1);send("join");watch(stream,me);tmr=setInterval(tick,1000);SFX.voice(1);ui();tick()}
+ async function stop(){if(!on)return;on=false;clearInterval(tmr);out.push({i:sid+".bye",t:"bye",f:sid});await flush();drop(1);if(stream)stream.getTracks().forEach(t=>t.stop());stream=null;stopW(0);stopW(1);talk=[0,0];SFX.voice(0);ui()}
+ return{ui,stop,tog:()=>on?stop():start(),mute(){mic=!mic;if(stream)stream.getAudioTracks().forEach(t=>t.enabled=mic);ui()},vol(v){ls("ldr_vv",v);if(aud)aud.volume=v}}})();
 
 /* ---------- LAYOUT ACAK TIAP GAME ---------- */
 function genSnake(){const used=new Set([1,36]),sn={},ld={};
@@ -249,7 +253,7 @@ const E={get 0(){return av(0)},get 1(){return av(1)}};
 const fresh=()=>({v:0,g:"menu",turn:0,pl:[prof,null],used:[],q:null,msg:"",rx:null,win:null});
 const api=async(m,b,q="")=>{const r=await fetch("/api?room="+room+q,{method:m,headers:{"x-pw":encodeURIComponent(pw)},body:b?JSON.stringify(b):undefined});if(!r.ok)throw r.status;return r.json()};
 async function commit(){st.v++;render();if(!local){try{await api("POST",st)}catch(e){}}}
-function kick(m){chat=[];seenC=0;rc();st=null;room="";pw="";local=false;ls("ldr_ses",null);err=m||"";render()}
+function kick(m){VC.stop();pn=0;pt=null;chat=[];seenC=0;rc();st=null;room="";pw="";local=false;ls("ldr_ses",null);err=m||"";render()}
 setInterval(async()=>{if(local||!room||!st)return;try{const r=await api("GET");if(r){adoptChat(r.chat);delete r.chat}if(r&&r.v>st.v){st=r;render()}}catch(e){if(e===404||e===403)kick("Room sudah ditutup atau dihapus 🗑️")}},1500);
 setInterval(()=>{if(!local&&room&&st)api("POST",null,"&act=ping").catch(()=>{})},30000);
 const can=()=>(local||me===st.turn)&&st.q==null&&st.win==null;
@@ -264,7 +268,8 @@ function saveP(){if(!tmp.n.trim())tmp.n=rname();prof={n:tmp.n.trim(),a:tmp.a};tm
 function ed(){tmp={...prof};prof=null;render()}
 
 /* ---------- HOME ---------- */
-const home=()=>`<h1><span class=wig>💕</span> LDR Game Night <span class=wig>🎲</span></h1>
+const home=()=>`<div class=hero>${ic("mascot","logo")}<h1>LDR Game Night</h1><p class=tag>Beda kota, tetap satu meja game. Main, ngobrol, voice call, dan kenalan lebih dalam.</p>
+<div class=chips><span class=chip>${ic("dice")}4 game seru</span><span class=chip>${ic("letter")}3000 pertanyaan</span><span class=chip>${ic("mic")}Voice chat</span><span class=chip>${ic("chat")}Chat stiker</span><span class=chip>${ic("music")}Musik latar</span></div></div>
 <div class=box style="text-align:center">${mon(prof.a,1)}<div><b>${esc(prof.n)}</b></div><button onclick="ed()" style="padding:4px 10px;font-size:.8rem">✏️ Ganti profil</button></div>
 <div class=box><b>Buat room</b><input id=pw1 type=password placeholder="Password room (min. 3 karakter)">
 <button class=pk onclick="mk()" style="width:100%;margin-top:6px">✨ Buat room baru</button>
@@ -286,24 +291,24 @@ async function out(){if(!confirm("Keluar dari room?"))return;if(!local){try{awai
 
 /* ---------- COMMON ---------- */
 const turnbar=x=>`<div class="box tb">${st.msg?`<div>${st.msg}</div>`:""}<b>${E[st.turn]} Giliran ${N(st.turn)}${can()&&!local?" (kamu!) ✨":""}</b><div class=row>${x}</div></div>`;
-const qcard=i=>`<div class=md><div class=qc><div class=qh>💕 COUPLE CARD GAME 💕</div><div class=qs>100 Questions to Know Each Other Deeper</div><span class=qn>#${i+1}</span><p class=id>${Q[i][0]}</p><p class=en>${Q[i][1]}</p><button class=pk onclick="st.q=null;commit()">Udah dijawab ✔️</button></div></div>`;
+const qcard=i=>`<div class=md><div class=qc><div class=qh>💕 COUPLE CARD GAME 💕</div><div class=qs>3000 Questions to Know Each Other Deeper</div><span class=qn>#${i+1} · ${qcat(i)}</span><p class=id>${Q[i][0]}</p><p class=en>${Q[i][1]}</p><button class=pk onclick="st.q=null;commit()">Udah dijawab ✔️</button></div></div>`;
 const winbox=()=>`<div class=md><div class=qc><h1>🎉🏆🎉</h1><h2>${N(st.win)} menang!</h2><p>Yang kalah traktir boba ya 🧋</p><button class=pk onclick="go('menu')">Balik ke menu</button></div></div>`;
-function qask(){let l=Q.map((_,i)=>i).filter(i=>!st.used.includes(i));if(!l.length){st.used=[];l=Q.map((_,i)=>i)}const i=l[rnd(l.length)];st.used.push(i);st.q=i}
+function qask(){const u=new Set(st.used),av=QC.map(c=>{const a=[];for(let i=c[0];i<c[1];i++)if(!u.has(i))a.push(i);return a}).filter(a=>a.length),a=av.length?av[rnd(av.length)]:Q.map((_,i)=>i),i=a[rnd(a.length)];st.used.push(i);if(st.used.length>400)st.used.shift();st.q=i}
 function ask(){qask();commit()}
 function win(t){st.win=t;commit()}
-function roll(fn){if(rolling)return;rolling=true;let n=0;const iv=setInterval(()=>{const d=document.getElementById("dc");if(d)d.textContent=DI[rnd(6)];if(++n>8){clearInterval(iv);rolling=false;fn(1+rnd(6))}},70)}
+function roll(fn){if(rolling)return;rolling=true;SFX.dice();let n=0;const iv=setInterval(()=>{const d=document.getElementById("dc");if(d)d.style.transform="rotateX("+rnd(360)+"deg) rotateY("+rnd(360)+"deg)";if(++n>8){clearInterval(iv);rolling=false;fn(1+rnd(6))}},70)}
 function react(e){st.rx={e,id:Date.now()};commit()}
-function fl(e){SFX.boing();for(let i=0;i<8;i++){const s=document.createElement("span");s.textContent=e;s.className="fl";s.style.left=10+rnd(80)+"%";s.style.animationDelay=i*.1+"s";document.body.appendChild(s);setTimeout(()=>s.remove(),2600)}}
+function fl(e){SFX.boing();for(let i=0;i<8;i++){const s=document.createElement("span");s.innerHTML=/^[a-z0-9]+$/.test(e)?ic(e):emo(e);s.className="fl";s.style.left=10+rnd(80)+"%";s.style.animationDelay=i*.1+"s";document.body.appendChild(s);setTimeout(()=>s.remove(),2600)}}
 function go(g){st.g=g;st.turn=rnd(2);st.hue=rnd(360);st.win=null;st.q=null;st.msg="";
  if(g=="snake"){Object.assign(st,genSnake());st.p=[1,1]}
  if(g=="mono"){st.p=[0,0];st.cash=[1000,1000];st.own={};st.buy=null;st.tl=genTiles()}
  if(g=="uno")initUno();
  commit()}
-const menu=()=>{const w=!local&&!(st.pl[0]&&st.pl[1]),d=w?"disabled":"";return `<h1 style="font-size:1.6rem">Mau main apa hari ini?</h1><div class=grid2>
-<button class="gm pk" ${d} onclick="go('snake')">🐍🪜<br>Ular Tangga</button>
-<button class="gm mn" ${d} onclick="go('mono')">🏠💰<br>Monopoli Mini</button>
-<button class="gm bl" ${d} onclick="go('uno')">🃏<br>UNO</button>
-<button class=gm ${d} onclick="ask()">💌<br>Couple Card</button></div>
+const menu=()=>{const w=!local&&!(st.pl[0]&&st.pl[1]),d=w?"disabled":"";
+ const G=(c,i,t,s,f)=>`<button class="gm gcard ${c}" ${d} onclick="${f}">${ic(i,"big")}<b>${t}</b><small>${s}</small></button>`;
+ return `<h1 style="font-size:1.6rem">Mau main apa hari ini?</h1><div class=grid2>
+${G("pk","snake","Ular Tangga","Naik tangga, awas digigit ular!","go('snake')")}${G("mn","house","Monopoli Mini","Beli tempat kencan impian","go('mono')")}
+${G("bl","cards","UNO","Habiskan kartumu duluan","go('uno')")}${G("","letter","Couple Card","3000 pertanyaan seru","ask()")}</div>
 <p class=hint>${w?"⏳ Menunggu pasanganmu masuk. Kasih tahu kode <b>"+room+"</b> dan password-nya ya 💞":local?"Mode 1 HP: gantian pegang ya 🤝":"Kode room: <b>"+room+"</b> 💞"}</p>`};
 
 /* ---------- ULAR TANGGA ---------- */
@@ -360,22 +365,25 @@ function drw(){if(!can()||st.wild)return;dr(st.turn,1);st.msg=`${N(st.turn)} amb
 
 /* ---------- RENDER ---------- */
 function render(){
- document.getElementById("bchat").style.display=!st||local?"none":"";
- if(!st){$.innerHTML=prof?home():profile();return}
+ ["bchat","bvoice"].forEach(i=>document.getElementById(i).style.display=!st||local?"none":"");
+ if(!st){$.innerHTML=emo(prof?home():profile());return}
  let h=`<div class=box style="display:flex;justify-content:space-between;padding:8px 12px"><span>${local?"📱 1 HP":"🔑 "+room} <button onclick="out()" style="padding:2px 8px;font-size:.8rem">🚪 Keluar</button></span><span>${E[0]} ${N(0)} · ${E[1]} ${N(1)}</span></div>`;
  h+=st.g=="menu"?menu():st.g=="snake"?snake():st.g=="mono"?mono():uno();
- h+=`<div class=row style="margin-top:14px">${st.g!="menu"?`<button onclick="go('menu')">🏠 Menu</button>`:""}${["😘","😂","🥺","😡","❤️"].map(e=>`<button onclick="react('${e}')">${e}</button>`).join("")}</div>`;
+ h+=`<div class=row style="margin-top:14px">${st.g!="menu"?`<button onclick="go('menu')">🏠 Menu</button>`:""}${["kiss","laugh","plead","angry","heart"].map(n=>`<button onclick="react('${n}')">${ic(n)}</button>`).join("")}</div>`;
  if(st.q!=null)h+=qcard(st.q);
  if(st.win!=null)h+=winbox();
- $.innerHTML=h;
+ $.innerHTML=emo(h);
  if(st.rx&&st.rx.id!=seenRx){seenRx=st.rx.id;fl(st.rx.e)}
  if(st.q!=null&&st.q!==pq)SFX.card();pq=st.q;
  if(st.win!=null&&pwn==null){SFX.win();fl("🎉");fl("🏆")}pwn=st.win;
  const sig=JSON.stringify([st.g,st.p,st.top,st.own,st.cash]);
  if(psig&&sig!==psig&&st.g!="menu"){if(/ular/.test(st.msg))SFX.down();else if(/tangga/.test(st.msg))SFX.up();else if(/beli/.test(st.msg))SFX.coin();else SFX.step()}psig=sig;
+ if(!local&&st.g!="menu"&&st.turn===me&&pt!==me&&st.q==null&&st.win==null)SFX.turn();pt=st.turn;
+ const cnt=(st.pl[0]?1:0)+(st.pl[1]?1:0);if(!local&&pn==1&&cnt==2){SFX.join();toast(N(1-me)+" masuk ke room!","heart")}pn=cnt;
+ VC.ui();
 }
 syncSnd();
-document.addEventListener("click",e=>{if(e.target.closest("button"))SFX.pop()});
+document.addEventListener("click",e=>{SFX.unlock();if(e.target.closest("button"))SFX.pop()});initBg();
 addEventListener("pointermove",e=>{const r=document.documentElement.style;r.setProperty("--ry",((e.clientX/innerWidth-.5)*12)+"deg");r.setProperty("--rx",(-(e.clientY/innerHeight-.5)*8)+"deg")});
 prof=ls("ldr_prof");const ses=ls("ldr_ses");
 if(ses&&prof){room=ses.room;pw=ses.pw;me=ses.me;api("GET").then(r=>{adoptChat(r.chat);delete r.chat;st=r;render()}).catch(()=>{room="";pw="";ls("ldr_ses",null);render()})}
