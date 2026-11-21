@@ -48,6 +48,8 @@ input{width:100%;margin:5px 0}
 .fl{position:fixed;bottom:0;font-size:2rem;animation:up 2s ease-out forwards;z-index:20;pointer-events:none}
 @keyframes up{to{transform:translateY(-80vh) rotate(20deg);opacity:0}}
 @media(prefers-reduced-motion:reduce){*{animation:none!important}}
+.mon{width:1.3em;height:1.3em;vertical-align:middle}.mon.big{width:130px;height:130px}
+hr{border:0;border-top:3px dashed #d6cbff;margin:14px 0}
 </style></head><body><div id="app"></div>
 <script>
 const Q=`Apa mimpi terbesarmu?|What is your biggest dream?
@@ -151,33 +153,68 @@ Bagaimana kamu ingin merayakan ulang tahun hubungan kita?|How do you want to cel
 Apa harapanmu untuk kita setahun ke depan?|What do you hope for us in the next year?
 Apa yang ingin kamu katakan padaku sekarang?|What do you want to tell me right now?`.split("\n").map(l=>l.split("|"));
 
-const $=document.getElementById("app"),E=["🐰","🐻"],DI="⚀⚁⚂⚃⚄⚅",rnd=n=>Math.floor(Math.random()*n);
-let st=null,me=0,room="",local=false,name="",err="",rolling=false,seenRx=0;
-const fresh=()=>({v:0,g:"menu",turn:0,names:[name||"Kamu","Doi"],used:[],q:null,msg:"",rx:null,win:null});
-const api=(m,b)=>fetch("/api?room="+room,{method:m,body:b&&JSON.stringify(b)}).then(r=>r.json());
+const $=document.getElementById("app"),DI="⚀⚁⚂⚃⚄⚅",rnd=n=>Math.floor(Math.random()*n);
+let st=null,me=0,room="",pw="",local=false,err="",rolling=false,seenRx=0,prof=null,tmp=null;
+const esc=s=>String(s).replace(/[&<>"'`]/g,"");
+const ls=(k,v)=>{try{if(v===undefined)return JSON.parse(localStorage.getItem(k));v===null?localStorage.removeItem(k):localStorage.setItem(k,JSON.stringify(v))}catch(e){return null}};
+
+/* ---------- MONSTER & NAMA ACAK ---------- */
+const ADJ=["Gemoy","Mungil","Kocak","Ngantuk","Galak","Imut","Ceria","Baper","Lemot","Jago"],NOUN=["Bakpao","Boba","Mochi","Puding","Cilok","Donat","Seblak","Cireng","Kroket","Bolu"];
+const rname=()=>NOUN[rnd(10)]+ADJ[rnd(10)]+rnd(100);
+function mon(s,big){let x=s>>>0;const R=n=>(x=(x*1664525+1013904223)>>>0,(x>>>8)%n);
+ const h=R(360),c=`hsl(${h},85%,68%)`,d=`hsl(${h},60%,35%)`,a=`hsl(${(h+150)%360},90%,62%)`,k=`stroke='${d}' stroke-width='3' stroke-linejoin='round' stroke-linecap='round'`;
+ const top=[`<path d='M22 36L16 8L42 26ZM78 36L84 8L58 26Z' fill='${a}' ${k}/>`,`<path d='M50 24V8' fill='none' ${k}/><circle cx='50' cy='7' r='6' fill='${a}' ${k}/>`,`<circle cx='20' cy='32' r='11' fill='${a}' ${k}/><circle cx='80' cy='32' r='11' fill='${a}' ${k}/>`,`<path d='M28 30L34 8L44 24L50 4L56 24L66 8L72 30Z' fill='${a}' ${k}/>`][R(4)];
+ const body=[`<circle cx='50' cy='56' r='36' fill='${c}' ${k}/>`,`<rect x='14' y='22' width='72' height='70' rx='28' fill='${c}' ${k}/>`,`<ellipse cx='50' cy='58' rx='39' ry='32' fill='${c}' ${k}/>`][R(3)];
+ const n=1+R(3),r=n==1?13:9;let e="";for(let i=0;i<n;i++){const cx=n==1?50:n==2?39+i*22:30+i*20;e+=`<circle cx='${cx}' cy='46' r='${r}' fill='#fff' ${k}/><circle cx='${cx+R(3)-1}' cy='47' r='${r/2.3}' fill='#2b1d3a'/>`}
+ const m=[`<path d='M36 66Q50 82 64 66' fill='none' ${k}/>`,`<path d='M36 66Q50 92 64 66Z' fill='#7a2a4a' ${k}/><rect x='45' y='66' width='10' height='8' fill='#fff'/>`,`<path d='M34 70Q42 60 50 70Q58 60 66 70' fill='none' ${k}/>`][R(3)];
+ return `<svg class='mon${big?" big":""}' viewBox='0 0 100 100'>${top}${body}<circle cx='24' cy='64' r='6' fill='#ff8fb1' opacity='.6'/><circle cx='76' cy='64' r='6' fill='#ff8fb1' opacity='.6'/>${e}${m}</svg>`}
+const av=i=>st&&st.pl[i]?mon(st.pl[i].a):"👻";
+const N=i=>st&&st.pl[i]?esc(st.pl[i].n):"Menunggu pasangan...";
+const E={get 0(){return av(0)},get 1(){return av(1)}};
+
+/* ---------- ROOM & SINKRONISASI ---------- */
+const fresh=()=>({v:0,g:"menu",turn:0,pl:[prof,null],used:[],q:null,msg:"",rx:null,win:null});
+const api=async(m,b,q="")=>{const r=await fetch("/api?room="+room+q,{method:m,headers:{"x-pw":encodeURIComponent(pw)},body:b?JSON.stringify(b):undefined});if(!r.ok)throw r.status;return r.json()};
 async function commit(){st.v++;render();if(!local){try{await api("POST",st)}catch(e){}}}
-setInterval(async()=>{if(local||!room||!st)return;try{const r=await api("GET");if(r&&r.v>st.v){st=r;render()}}catch(e){}},1500);
+function kick(m){st=null;room="";pw="";local=false;ls("ldr_ses",null);err=m||"";render()}
+setInterval(async()=>{if(local||!room||!st)return;try{const r=await api("GET");if(r&&r.v>st.v){st=r;render()}}catch(e){if(e===404||e===403)kick("Room sudah ditutup atau dihapus 🗑️")}},1500);
+setInterval(()=>{if(!local&&room&&st)api("POST",null,"&act=ping").catch(()=>{})},30000);
 const can=()=>(local||me===st.turn)&&st.q==null&&st.win==null;
-const nm=()=>document.getElementById("nm").value.trim();
+
+/* ---------- PROFIL ---------- */
+const profile=()=>{tmp=tmp||{n:rname(),a:rnd(1e6)};return `<h1><span class=wig>👾</span> Kenalan dulu yuk!</h1>
+<div class=box style="text-align:center"><p>Ini monster kamu:</p>${mon(tmp.a,1)}
+<div class=row><button class=bl onclick="tmp.a=rnd(1e6);render()">🎲 Monster baru</button></div>
+<input id=un value="${tmp.n}" maxlength=14 placeholder="Username kamu" oninput="tmp.n=esc(this.value)">
+<div class=row><button class=mn onclick="tmp.n=rname();render()">🎲 Nama acak</button><button class=pk onclick="saveP()">Lanjut 💕</button></div></div>`};
+function saveP(){if(!tmp.n.trim())tmp.n=rname();prof={n:tmp.n.trim(),a:tmp.a};tmp=null;ls("ldr_prof",prof);render()}
+function ed(){tmp={...prof};prof=null;render()}
 
 /* ---------- HOME ---------- */
 const home=()=>`<h1><span class=wig>💕</span> LDR Game Night <span class=wig>🎲</span></h1>
-<p style="text-align:center">Beda kota, tetap bisa main bareng ✈️</p>
-<div class=box><input id=nm placeholder="Nama kamu" value="${name}">
-<button class=pk onclick="mk()" style="width:100%;margin:6px 0">✨ Buat room baru</button>
-<input id=cd placeholder="Kode room dari pasanganmu" maxlength=6 style="text-transform:uppercase">
-<button class=mn onclick="jn()" style="width:100%;margin:6px 0">💌 Gabung room</button>
-<button class=bl onclick="lc()" style="width:100%">📱 Main berdua di 1 HP</button>
-<p>${err}</p></div>`;
-function mk(){name=nm();room=[...Array(4)].map(()=>"ABCDEFGHJKLMNPQRSTUVWXYZ"[rnd(24)]).join("");me=0;local=false;st=fresh();commit()}
-async function jn(){name=nm();room=document.getElementById("cd").value.trim().toUpperCase();if(!room)return;
- try{const r=await api("GET");if(!r)throw 0;st=r;me=1;local=false;st.names[1]=name||"Doi";commit()}catch(e){err="Room nggak ketemu 🥲 cek lagi kodenya ya";render()}}
-function lc(){name=nm();local=true;st=fresh();render()}
+<div class=box style="text-align:center">${mon(prof.a,1)}<div><b>${esc(prof.n)}</b></div><button onclick="ed()" style="padding:4px 10px;font-size:.8rem">✏️ Ganti profil</button></div>
+<div class=box><b>Buat room</b><input id=pw1 type=password placeholder="Password room (min. 3 karakter)">
+<button class=pk onclick="mk()" style="width:100%;margin-top:6px">✨ Buat room baru</button>
+<hr><b>Gabung room</b><input id=cd placeholder="Kode room" maxlength=6 style="text-transform:uppercase"><input id=pw2 type=password placeholder="Password room">
+<button class=mn onclick="jn()" style="width:100%;margin-top:6px">💌 Gabung</button>
+<hr><button class=bl onclick="lc()" style="width:100%">📱 Main berdua di 1 HP</button><p>${err}</p></div>`;
+async function mk(){const p=document.getElementById("pw1").value;if(p.length<3){err="Password minimal 3 karakter 🔑";return render()}
+ pw=p;local=false;me=0;st=fresh();
+ for(let i=0;i<5;i++){room=[...Array(4)].map(()=>"ABCDEFGHJKLMNPQRSTUVWXYZ"[rnd(24)]).join("");
+  try{await api("POST",st,"&act=create");err="";ls("ldr_ses",{room,pw,me});return render()}catch(e){if(e!==409)break}}
+ room="";pw="";st=null;err="Gagal bikin room, coba lagi ya 🥲";render()}
+async function jn(){room=document.getElementById("cd").value.trim().toUpperCase();pw=document.getElementById("pw2").value;
+ if(!room||!pw){err="Isi kode & password dulu ya";return render()}
+ try{const r=await api("GET"),i=r.pl[0]?r.pl[1]?-1:1:0;if(i<0){room="";pw="";err="Room sudah penuh 🙈";return render()}
+  st=r;me=i;local=false;st.pl[i]=prof;err="";ls("ldr_ses",{room,pw,me});commit()}
+ catch(e){st=null;room="";err=e===403?"Password salah 🔒":e===404?"Room nggak ketemu 🥲":"Koneksi bermasalah, coba lagi";pw="";render()}}
+function lc(){local=true;room="";st=fresh();st.pl[1]={n:rname(),a:rnd(1e6)};render()}
+async function out(){if(!confirm("Keluar dari room?"))return;if(!local){try{await api("POST",null,"&act=leave&slot="+me)}catch(e){}}kick("")}
 
 /* ---------- COMMON ---------- */
-const turnbar=x=>`<div class="box tb">${st.msg?`<div>${st.msg}</div>`:""}<b>${E[st.turn]} Giliran ${st.names[st.turn]}${can()&&!local?" (kamu!) ✨":""}</b><div class=row>${x}</div></div>`;
+const turnbar=x=>`<div class="box tb">${st.msg?`<div>${st.msg}</div>`:""}<b>${E[st.turn]} Giliran ${N(st.turn)}${can()&&!local?" (kamu!) ✨":""}</b><div class=row>${x}</div></div>`;
 const qcard=i=>`<div class=md><div class=qc><div class=qh>💕 COUPLE CARD GAME 💕</div><div class=qs>100 Questions to Know Each Other Deeper</div><span class=qn>#${i+1}</span><p class=id>${Q[i][0]}</p><p class=en>${Q[i][1]}</p><button class=pk onclick="st.q=null;commit()">Udah dijawab ✔️</button></div></div>`;
-const winbox=()=>`<div class=md><div class=qc><h1>🎉🏆🎉</h1><h2>${st.names[st.win]} menang!</h2><p>Yang kalah traktir boba ya 🧋</p><button class=pk onclick="go('menu')">Balik ke menu</button></div></div>`;
+const winbox=()=>`<div class=md><div class=qc><h1>🎉🏆🎉</h1><h2>${N(st.win)} menang!</h2><p>Yang kalah traktir boba ya 🧋</p><button class=pk onclick="go('menu')">Balik ke menu</button></div></div>`;
 function qask(){let l=Q.map((_,i)=>i).filter(i=>!st.used.includes(i));if(!l.length){st.used=[];l=Q.map((_,i)=>i)}const i=l[rnd(l.length)];st.used.push(i);st.q=i}
 function ask(){qask();commit()}
 function win(t){st.win=t;commit()}
@@ -189,12 +226,12 @@ function go(g){st.g=g;st.turn=0;st.win=null;st.q=null;st.msg="";
  if(g=="mono"){st.p=[0,0];st.cash=[1000,1000];st.own={};st.buy=null}
  if(g=="uno")initUno();
  commit()}
-const menu=()=>`<h1 style="font-size:1.6rem">Mau main apa hari ini?</h1><div class=grid2>
-<button class="gm pk" onclick="go('snake')">🐍🪜<br>Ular Tangga</button>
-<button class="gm mn" onclick="go('mono')">🏠💰<br>Monopoli Mini</button>
-<button class="gm bl" onclick="go('uno')">🃏<br>UNO</button>
-<button class=gm onclick="ask()">💌<br>Couple Card</button></div>
-<p class=hint>${local?"Mode 1 HP: gantian pegang ya 🤝":"Bagikan kode room <b>"+room+"</b> ke pasanganmu 💞"}</p>`;
+const menu=()=>{const w=!local&&!(st.pl[0]&&st.pl[1]),d=w?"disabled":"";return `<h1 style="font-size:1.6rem">Mau main apa hari ini?</h1><div class=grid2>
+<button class="gm pk" ${d} onclick="go('snake')">🐍🪜<br>Ular Tangga</button>
+<button class="gm mn" ${d} onclick="go('mono')">🏠💰<br>Monopoli Mini</button>
+<button class="gm bl" ${d} onclick="go('uno')">🃏<br>UNO</button>
+<button class=gm ${d} onclick="ask()">💌<br>Couple Card</button></div>
+<p class=hint>${w?"⏳ Menunggu pasanganmu masuk. Kasih tahu kode <b>"+room+"</b> dan password-nya ya 💞":local?"Mode 1 HP: gantian pegang ya 🤝":"Kode room: <b>"+room+"</b> 💞"}</p>`};
 
 /* ---------- ULAR TANGGA ---------- */
 const SN={16:6,27:11,32:19,35:24},LD={3:13,8:21,18:29,22:33},SQ=[5,10,14,20,26,30];
@@ -204,7 +241,7 @@ function snake(){let c="";for(let r=5;r>=0;r--)for(let k=0;k<6;k++){const n=r*6+
  c+=`<div class=c style="background:${bg}"><b>${n}</b><span class=e>${e}</span>${st.p.map((p,i)=>p==n?`<span class="pw p${i}">${E[i]}</span>`:"").join("")}</div>`}
  return `<div class=sb>${c}</div>`+turnbar(`<span id=dc class=dice>${DI[(st.d||1)-1]}</span><button class=pk ${can()?"":"disabled"} onclick="sroll()">Kocok dadu 🎲</button>`)+`<p class=hint>🐍 turun · 🪜 naik · 💌 kartu pertanyaan</p>`}
 function sroll(){if(!can())return;roll(d=>{const t=st.turn;let p=st.p[t]+d;st.d=d;if(p>36)p=72-p;
- st.msg=`${st.names[t]} dapat ${d}`;
+ st.msg=`${N(t)} dapat ${d}`;
  if(p==36){st.p[t]=36;return win(t)}
  if(SN[p]){p=SN[p];st.msg+=" · 🐍 digigit ular!"}else if(LD[p]){p=LD[p];st.msg+=" · 🪜 naik tangga!"}
  st.p[t]=p;st.turn=1-t;if(SQ.includes(p))qask();commit()})}
@@ -230,14 +267,14 @@ const POS=i=>i<5?[1,i+1]:i<8?[i-3,5]:i<13?[5,13-i]:[17-i,1];
 function mono(){const c=T.map((t,i)=>{const[r,k]=POS(i),o=st.own[i];
  return `<div class=mc style="grid-area:${r}/${k};${o!=null?"background:"+(o?"#ffd0d9":"#cfeaff"):""}"><span>${t.e}</span><small>${t.n}</small>${t.p?`<small>${o!=null?E[o]:"$"+t.p}</small>`:""}${st.p.map((p,j)=>p==i?`<span class="pw p${j}">${E[j]}</span>`:"").join("")}</div>`}).join("");
  const b=st.buy,ui=b!=null?(can()?`<div>Beli ${T[b].n} $${T[b].p}?</div><div class=row><button class=mn onclick="buy(1)">Beli 🏠</button><button onclick="buy(0)">Skip</button></div>`:"<div>Lagi mikir mau beli... 🤔</div>"):`<button class=pk ${can()?"":"disabled"} onclick="mroll()">Kocok 🎲</button>`;
- return `<div class=mb>${c}<div class=mid>${st.names.map((n,i)=>`<div>${E[i]} $${st.cash[i]}</div>`).join("")}<span id=dc class=dice>${DI[(st.d||1)-1]}</span>${ui}</div></div>`+turnbar(`<button onclick="fin()">Akhiri game</button>`)+`<p class=hint>Lewat START +$200 · sewa = 30% harga</p>`}
+ return `<div class=mb>${c}<div class=mid>${st.cash.map((n,i)=>`<div>${E[i]} $${st.cash[i]}</div>`).join("")}<span id=dc class=dice>${DI[(st.d||1)-1]}</span>${ui}</div></div>`+turnbar(`<button onclick="fin()">Akhiri game</button>`)+`<p class=hint>Lewat START +$200 · sewa = 30% harga</p>`}
 function nextT(){if(st.cash[st.turn]<0)return win(1-st.turn);st.turn=1-st.turn;commit()}
-function mroll(){if(!can()||st.buy!=null)return;roll(d=>{const t=st.turn,o=st.p[t],n=(o+d)%16,x=T[n],ow=st.own[n];st.d=d;st.p[t]=n;st.msg=`${st.names[t]} dapat ${d}`;
+function mroll(){if(!can()||st.buy!=null)return;roll(d=>{const t=st.turn,o=st.p[t],n=(o+d)%16,x=T[n],ow=st.own[n];st.d=d;st.p[t]=n;st.msg=`${N(t)} dapat ${d}`;
  if(n<o){st.cash[t]+=200;st.msg+=" · lewat START +$200"}
  if(x.t=="p"){if(ow==null){st.buy=n;return commit()}if(ow!=t){const r=Math.round(x.p*.3);st.cash[t]-=r;st.cash[ow]+=r;st.msg+=` · bayar sewa $${r}`}}
  else if(x.t=="q")qask();else if(x.t=="t")st.cash[t]-=50;else if(x.t=="b")st.cash[t]+=50;
  nextT()})}
-function buy(y){const t=st.turn,b=st.buy;if(y&&st.cash[t]>=T[b].p){st.cash[t]-=T[b].p;st.own[b]=t;st.msg=`${st.names[t]} beli ${T[b].n} 🏠`}st.buy=null;nextT()}
+function buy(y){const t=st.turn,b=st.buy;if(y&&st.cash[t]>=T[b].p){st.cash[t]-=T[b].p;st.own[b]=t;st.msg=`${N(t)} beli ${T[b].n} 🏠`}st.buy=null;nextT()}
 function fin(){const w=[0,1].map(i=>st.cash[i]+Object.keys(st.own).filter(k=>st.own[k]==i).reduce((s,k)=>s+T[k].p,0));win(w[0]>=w[1]?0:1)}
 
 /* ---------- UNO ---------- */
@@ -250,7 +287,7 @@ const dr=(p,n)=>{while(n--)st.h[p].push(st.dk.length?st.dk.pop():{c:"rygb"[rnd(4
 function uno(){const v=local?st.turn:me,my=can(),o=1-v;
  const cd=(x,k,f)=>`<div class="uc ${k}" style="background:${CL[x.c]}" ${f||""}>${x.v=="S"?"⛔":x.v=="W"?"🌈":x.v}</div>`;
  const pick=st.wild&&my?`<div class=row><span>Pilih warna:</span>${[..."rygb"].map(c=>`<button style="background:${CL[c]}" onclick="wild('${c}')">●</button>`).join("")}</div>`:"";
- return `<div class="box tb"><div>${local?"Kartu lawan disembunyikan, oper HP tiap giliran 🙈":`${E[o]} ${st.names[o]}: ${st.h[o].length} kartu`}</div>
+ return `<div class="box tb"><div>${local?"Kartu lawan disembunyikan, oper HP tiap giliran 🙈":`${E[o]} ${N(o)}: ${st.h[o].length} kartu`}</div>
  <div class=row><div class="uc back" onclick="drw()">🂠<br>ambil</div>${cd(st.top,"")}<span class=dot style="background:${CL[st.col]}"></span></div></div>`
  +turnbar(pick)+`<div class=hand>${st.h[v].map((x,i)=>cd(x,my&&!st.wild&&ok(x)?"":"off",`onclick="play(${i})"`)).join("")}</div><p class=hint>⛔ skip + kartu pertanyaan · 🌈 ganti warna</p>`}
 function play(i){if(!can()||st.wild)return;const t=st.turn,x=st.h[t][i];if(!ok(x))return;st.h[t].splice(i,1);st.top=x;
@@ -258,17 +295,17 @@ function play(i){if(!can()||st.wild)return;const t=st.turn,x=st.h[t][i];if(!ok(x
  if(x.c=="w"){st.wild=1;return commit()}
  st.col=x.c;eff(x)}
 function wild(c){st.col=c;st.wild=0;eff(st.top)}
-function eff(x){const t=st.turn,o=1-t;st.msg=`${st.names[t]} main ${x.v}`;
+function eff(x){const t=st.turn,o=1-t;st.msg=`${N(t)} main ${x.v}`;
  if(x.v=="+2")dr(o,2);else if(x.v=="+4")dr(o,4);else if(x.v=="S")qask();
  if(!["S","+2","+4"].includes(x.v))st.turn=o;
  if(st.h[t].length==1)st.msg+=" · UNO! 🔔";
  commit()}
-function drw(){if(!can()||st.wild)return;dr(st.turn,1);st.msg=`${st.names[st.turn]} ambil kartu`;st.turn=1-st.turn;commit()}
+function drw(){if(!can()||st.wild)return;dr(st.turn,1);st.msg=`${N(st.turn)} ambil kartu`;st.turn=1-st.turn;commit()}
 
 /* ---------- RENDER ---------- */
 function render(){
- if(!st){$.innerHTML=home();return}
- let h=`<div class=box style="display:flex;justify-content:space-between;padding:8px 12px"><span>${local?"📱 1 HP":"🔑 "+room}</span><span>${E[0]} ${st.names[0]} · ${E[1]} ${st.names[1]}</span></div>`;
+ if(!st){$.innerHTML=prof?home():profile();return}
+ let h=`<div class=box style="display:flex;justify-content:space-between;padding:8px 12px"><span>${local?"📱 1 HP":"🔑 "+room} <button onclick="out()" style="padding:2px 8px;font-size:.8rem">🚪 Keluar</button></span><span>${E[0]} ${N(0)} · ${E[1]} ${N(1)}</span></div>`;
  h+=st.g=="menu"?menu():st.g=="snake"?snake():st.g=="mono"?mono():uno();
  h+=`<div class=row style="margin-top:14px">${st.g!="menu"?`<button onclick="go('menu')">🏠 Menu</button>`:""}${["😘","😂","🥺","😡","❤️"].map(e=>`<button onclick="react('${e}')">${e}</button>`).join("")}</div>`;
  if(st.q!=null)h+=qcard(st.q);
@@ -276,5 +313,7 @@ function render(){
  $.innerHTML=h;
  if(st.rx&&st.rx.id!=seenRx){seenRx=st.rx.id;fl(st.rx.e)}
 }
+prof=ls("ldr_prof");const ses=ls("ldr_ses");
+if(ses&&prof){room=ses.room;pw=ses.pw;me=ses.me;api("GET").then(r=>{st=r;render()}).catch(()=>{room="";pw="";ls("ldr_ses",null);render()})}
 render();
 </script></body></html>
